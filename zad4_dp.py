@@ -3,28 +3,18 @@
 # Programowanie dynamiczne.
 # Dla każdej pozycji w ciągu dynamicznie zliczamy ile jest jedynek
 # w ostatnim bloku długości D. Blok, który ma ich najwięcej to kandydat.
-# Odpowiedź wyliczamy tak: musimy zgasić pozostałe jedynki oraz 
-# zapalić tyle jedynek, ile brakuje w maksymalnym bloku.  
+# Odpowiedź wyliczamy tak: musimy zgasić wszystkie jedynki poza kandydatem
+# oraz zapalić tyle jedynek, ile brakuje w kandydacie.  
 
-from sys import argv
-
-
-def read_input_sequence(s: str) -> list:
+def convert_input_sequence(s: str) -> list:
     return [int(c) for c in s]
 
 input_file = open("zad4_input.txt", 'r')
 output_file = open("zad4_output.txt", 'w')
 input_lines = input_file.readlines()
 
-for line in input_lines:
-        
-    args = line.split()
-
-    input_sequence = read_input_sequence(args[0])
-    D = int(args[1])
+def opt_dist(input_sequence: list[int], D: int) -> None:
     seq_len = len(input_sequence)
-
-
     aux_prefix = [0] * D
     working_seq = aux_prefix + input_sequence
 
@@ -42,3 +32,11 @@ for line in input_lines:
     answer = bits_to_unset + bits_to_set
     
     output_file.write(str(answer) + '\n')
+
+
+for line in input_lines:
+    args = line.split()
+    input_sequence = convert_input_sequence(args[0])
+    D = int(args[1])
+    
+    opt_dist(input_sequence, D)
