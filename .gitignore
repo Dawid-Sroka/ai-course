@@ -1,4 +1,7 @@
 validator.py
-zad4_input.txt
-zad4_output.txt
-
+*_input.txt
+*_output.txt
+words_for_ai1.txt
+zad2_words.txt.gz
+pan_tadeusz_bez_spacji
+.vscode
