@@ -92,18 +92,18 @@ def done_col(col):
     
 # unfinished = set(present)
 unfinished = set(range(D))
-print(unfinished)
+# print(unfinished)
 
 def main(unfinished):
     while len(unfinished) > 0:
     # for i in range(30):
         victim = sample(sorted(unfinished),1)[0]
         # victim = randrange(0,x_dim)
-        print(victim)
+        # print(victim)
         if victim < x_dim:
             row = victim
 
-            print("row")
+            # print("row")
             min_dist = x_dim + y_dim
             min_pos = 0
             for col in range(y_dim):
@@ -114,15 +114,14 @@ def main(unfinished):
                 if min_dist > row_cost + col_cost :
                     min_dist = row_cost + col_cost
                     min_pos = col
-            print(min_dist)
-            print(min_pos)
+            # print(min_dist)
+            # print(min_pos)
 
             r = randrange(100)
             if r < 10:
                 min_pos = randrange(y_dim)
 
             flip(m,row,min_pos)
-            print()
             # dump(m)
             if done_row(row):
                 unfinished = unfinished - {victim}
@@ -134,7 +133,7 @@ def main(unfinished):
                 unfinished = unfinished | {min_pos + x_dim}
         else:
             col = victim - x_dim
-            print("col")
+            # print("col")
             min_dist = x_dim + y_dim
             min_pos = 0
             for row in range(x_dim):
@@ -145,15 +144,14 @@ def main(unfinished):
                 if min_dist > row_cost + col_cost :
                     min_dist = row_cost + col_cost
                     min_pos = row
-            print(min_dist)
-            print(min_pos)
+            # print(min_dist)
+            # print(min_pos)
 
             r = randrange(100)
             if r < 10:
                 min_pos = randrange(x_dim)
 
             flip(m,min_pos,col)
-            print()
             # dump(m)
             if done_col(col):
                 unfinished = unfinished - {victim}
