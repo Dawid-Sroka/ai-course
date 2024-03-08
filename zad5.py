@@ -28,7 +28,7 @@ y_cnt = [0] * y_dim
 present = [0] * D
 
 # unfinished = set(present)
-unfinished = set(range(D))
+unfinished = set(range(x_dim))
 print(unfinished)
 
 def opt_dist(input_sequence: list[int], D: int) -> None:
@@ -77,22 +77,28 @@ def flip_in_col(matrix, row, col):
     else:
         result[row] = 0
     return result
+
+def done_row(row):
+    if opt_dist(m[row], x_arr[row]) == 0:
+        return True
+    else:
+        return False
     
-def main():
-    # while len(unfinished) > 0:
-    for i in range(3):
+def main(unfinished):
+    while len(unfinished) > 0:
+    # for i in range(30):
         # victim = uniform(0,1)
-        # victim = sample(sorted(unfinished),1)[0]
-        victim = randrange(0,x_dim)
+        victim = sample(sorted(unfinished),1)[0]
+        # victim = randrange(0,x_dim)
         print(victim)
         # victim = 2
         if victim < x_dim:
             row = victim
 
             print("row")
+            min_dist = x_dim + y_dim
+            min_pos = 0
             for col in range(y_dim):
-                min_dist = x_dim + y_dim
-                min_pos = 0
                 flipped = flip_in_row(m, row, col)
                 row_cost = opt_dist(flipped, x_arr[row])
                 flipped = flip_in_col(m, row, col)
@@ -105,11 +111,15 @@ def main():
             flip(m,row,min_pos)
             print()
             dump(m)
+            if done_row(row):
+                unfinished = unfinished - {row}
+            else:
+                unfinished = unfinished | {row}
         else:
             col = victim - x_dim
 
             break
 
-main()
+main(unfinished)
 # f = flip_in_col(m,2,1)
 # print(f)
