@@ -9,8 +9,7 @@
 # Ale czasami, z prawdopodobieństwem r/100, wybieram losowe pole z W.
 # Po zmianie aktualizuję zbiór unfinished (sprawdzam wiersz i kolumnę)
 
-from random import uniform, sample, randrange
-from math import floor
+from random import sample, randrange
 
 zad = "zad5"
 
