@@ -1,7 +1,7 @@
 # Dawid Sroka, zad3 z pracowni 1
 #
 
-from random import uniform, sample
+from random import uniform, sample, randrange
 from math import floor
 
 zad = "zad5"
@@ -50,13 +50,15 @@ def opt_dist(input_sequence: list[int], D: int) -> None:
     answer = bits_to_unset + bits_to_set
     return answer
 
+def dump(m):
+    for i in range(x_dim):
+        print("".join(str(x) for x in m[i]))
+
 def flip(matrix, row, col):
-    result = matrix
     if matrix[row][col] == 0:
-        result[row][col] = 1
+        matrix[row][col] = 1
     else:
-        result[row][col] = 0
-    return result
+        matrix[row][col] = 0
 
 def flip_in_row(matrix, row, col):
     result = matrix[row].copy()
@@ -65,27 +67,49 @@ def flip_in_row(matrix, row, col):
     else:
         result[col] = 0
     return result
+
+def flip_in_col(matrix, row, col):
+    result = []
+    for i in range(x_dim):
+        result.append(m[i][col])
+    if matrix[row][col] == 0:
+        result[row] = 1
+    else:
+        result[row] = 0
+    return result
     
 def main():
     # while len(unfinished) > 0:
-    for i in range(1):
+    for i in range(3):
         # victim = uniform(0,1)
-        victim = sample(sorted(unfinished),1)[0]
+        # victim = sample(sorted(unfinished),1)[0]
+        victim = randrange(0,x_dim)
         print(victim)
-        victim = 2
+        # victim = 2
         if victim < x_dim:
             row = victim
+
             print("row")
             for col in range(y_dim):
-                min_dist = x_dim
+                min_dist = x_dim + y_dim
+                min_pos = 0
                 flipped = flip_in_row(m, row, col)
-                print(flipped)
-                candidate = opt_dist(flipped, x_arr[row])
-                print(candidate)
-                min_dist = min(min_dist, candidate)
+                row_cost = opt_dist(flipped, x_arr[row])
+                flipped = flip_in_col(m, row, col)
+                col_cost = opt_dist(flipped, y_arr[col])
+                if min_dist > row_cost + col_cost :
+                    min_dist = row_cost + col_cost
+                    min_pos = col
             print(min_dist)
+            print(min_pos)
+            flip(m,row,min_pos)
+            print()
+            dump(m)
         else:
-            victim = victim - x_dim
+            col = victim - x_dim
+
             break
 
 main()
+# f = flip_in_col(m,2,1)
+# print(f)
