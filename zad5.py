@@ -27,9 +27,7 @@ y_cnt = [0] * y_dim
 
 present = [0] * D
 
-# unfinished = set(present)
-unfinished = set(range(x_dim))
-print(unfinished)
+
 
 def opt_dist(input_sequence: list[int], D: int) -> None:
     seq_len = len(input_sequence)
@@ -83,7 +81,20 @@ def done_row(row):
         return True
     else:
         return False
+
+def done_col(col):
+    result = []
+    for i in range(x_dim):
+        result.append(m[i][col])
+    if opt_dist(result, y_arr[col]) == 0:
+        return True
+    else:
+        return False
     
+# unfinished = set(present)
+unfinished = set(range(D))
+print(unfinished)
+
 def main(unfinished):
     while len(unfinished) > 0:
     # for i in range(30):
@@ -112,13 +123,39 @@ def main(unfinished):
             print()
             dump(m)
             if done_row(row):
-                unfinished = unfinished - {row}
+                unfinished = unfinished - {victim}
             else:
-                unfinished = unfinished | {row}
+                unfinished = unfinished | {victim}
+            if done_col(min_pos):
+                unfinished = unfinished - {min_pos + x_dim}
+            else:
+                unfinished = unfinished | {min_pos + x_dim}
         else:
             col = victim - x_dim
-
-            break
+            print("col")
+            min_dist = x_dim + y_dim
+            min_pos = 0
+            for row in range(x_dim):
+                flipped = flip_in_row(m, row, col)
+                row_cost = opt_dist(flipped, x_arr[row])
+                flipped = flip_in_col(m, row, col)
+                col_cost = opt_dist(flipped, y_arr[col])
+                if min_dist > row_cost + col_cost :
+                    min_dist = row_cost + col_cost
+                    min_pos = row
+            print(min_dist)
+            print(min_pos)
+            flip(m,min_pos,col)
+            print()
+            dump(m)
+            if done_col(col):
+                unfinished = unfinished - {victim}
+            else:
+                unfinished = unfinished | {victim}
+            if done_row(min_pos):
+                unfinished = unfinished - {min_pos}
+            else:
+                unfinished = unfinished | {min_pos}
 
 main(unfinished)
 # f = flip_in_col(m,2,1)
