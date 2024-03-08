@@ -1,5 +1,13 @@
 # Dawid Sroka, zad3 z pracowni 1
 #
+# Utrzymuję zbiór unfinished - zbiór wierszy i kolumn, które
+# jeszcze nie są gotowe.
+# Dopóki unfinished niepusty, losuje element z niego, BSO wiersz W.
+# Załóżmy, że obrazek w wierszu W zadaje wartość D.
+# Dla każdego pola W wyliczam jaki byłby opt_dist(W, D).
+# To pole, które minimalizuje tę wartość, wybieram do zmiany.
+# Ale czasami, z prawdopodobieństwem r/100, wybieram losowe pole z W.
+# Po zmianie aktualizuję zbiór unfinished (sprawdzam wiersz i kolumnę)
 
 from random import uniform, sample, randrange
 from math import floor
@@ -12,12 +20,10 @@ input_lines = input_file.readlines()
 
 
 x_dim, y_dim = [int(d) for d in input_lines[0].split()]
-D = x_dim + y_dim
+R = x_dim + y_dim
 m = [[0 for x in range(y_dim)] for y in range(x_dim)]
 x_arr = [int(n) for n in input_lines[1:x_dim+1]]
 y_arr = [int(n) for n in input_lines[x_dim+1:]]
-print(x_dim)
-print(y_dim)
 
 
 def opt_dist(input_sequence: list[int], D: int) -> None:
@@ -47,9 +53,7 @@ def dump(m):
                 line += "#"
             else:
                 line += "."
-        print(line)
         output_file.write(line+"\n")
-        # print("".join(str(x) for x in m[i]))
 
 def flip(matrix, row, col):
     if matrix[row][col] == 0:
@@ -90,20 +94,14 @@ def done_col(col):
     else:
         return False
     
-# unfinished = set(present)
-unfinished = set(range(D))
-# print(unfinished)
+unfinished = set(range(R))
 
 def main(unfinished):
     while len(unfinished) > 0:
-    # for i in range(30):
         victim = sample(sorted(unfinished),1)[0]
-        # victim = randrange(0,x_dim)
-        # print(victim)
         if victim < x_dim:
             row = victim
 
-            # print("row")
             min_dist = x_dim + y_dim
             min_pos = 0
             for col in range(y_dim):
@@ -114,15 +112,12 @@ def main(unfinished):
                 if min_dist > row_cost + col_cost :
                     min_dist = row_cost + col_cost
                     min_pos = col
-            # print(min_dist)
-            # print(min_pos)
 
             r = randrange(100)
             if r < 10:
                 min_pos = randrange(y_dim)
 
             flip(m,row,min_pos)
-            # dump(m)
             if done_row(row):
                 unfinished = unfinished - {victim}
             else:
@@ -133,7 +128,6 @@ def main(unfinished):
                 unfinished = unfinished | {min_pos + x_dim}
         else:
             col = victim - x_dim
-            # print("col")
             min_dist = x_dim + y_dim
             min_pos = 0
             for row in range(x_dim):
@@ -144,15 +138,12 @@ def main(unfinished):
                 if min_dist > row_cost + col_cost :
                     min_dist = row_cost + col_cost
                     min_pos = row
-            # print(min_dist)
-            # print(min_pos)
 
             r = randrange(100)
             if r < 10:
                 min_pos = randrange(x_dim)
 
             flip(m,min_pos,col)
-            # dump(m)
             if done_col(col):
                 unfinished = unfinished - {victim}
             else:
@@ -164,5 +155,3 @@ def main(unfinished):
 
 main(unfinished)
 dump(m)
-# f = flip_in_col(m,2,1)
-# print(f)
