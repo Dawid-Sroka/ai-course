@@ -13,20 +13,11 @@ input_lines = input_file.readlines()
 
 x_dim, y_dim = [int(d) for d in input_lines[0].split()]
 D = x_dim + y_dim
-r = x_dim / D
 m = [[0 for x in range(y_dim)] for y in range(x_dim)]
-
-arr = [int(n) for n in input_lines[1:]]
 x_arr = [int(n) for n in input_lines[1:x_dim+1]]
 y_arr = [int(n) for n in input_lines[x_dim+1:]]
 print(x_dim)
 print(y_dim)
-
-x_cnt = [0] * x_dim
-y_cnt = [0] * y_dim
-
-present = [0] * D
-
 
 
 def opt_dist(input_sequence: list[int], D: int) -> None:
@@ -98,11 +89,9 @@ print(unfinished)
 def main(unfinished):
     while len(unfinished) > 0:
     # for i in range(30):
-        # victim = uniform(0,1)
         victim = sample(sorted(unfinished),1)[0]
         # victim = randrange(0,x_dim)
         print(victim)
-        # victim = 2
         if victim < x_dim:
             row = victim
 
@@ -119,6 +108,11 @@ def main(unfinished):
                     min_pos = col
             print(min_dist)
             print(min_pos)
+
+            r = randrange(100)
+            if r < 1:
+                min_pos = randrange(y_dim)
+
             flip(m,row,min_pos)
             print()
             dump(m)
