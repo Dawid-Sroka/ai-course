@@ -41,7 +41,15 @@ def opt_dist(input_sequence: list[int], D: int) -> None:
 
 def dump(m):
     for i in range(x_dim):
-        print("".join(str(x) for x in m[i]))
+        line = ""
+        for j in range(y_dim):
+            if m[i][j] == 1:
+                line += "#"
+            else:
+                line += "."
+        print(line)
+        output_file.write(line+"\n")
+        # print("".join(str(x) for x in m[i]))
 
 def flip(matrix, row, col):
     if matrix[row][col] == 0:
@@ -110,12 +118,12 @@ def main(unfinished):
             print(min_pos)
 
             r = randrange(100)
-            if r < 1:
+            if r < 10:
                 min_pos = randrange(y_dim)
 
             flip(m,row,min_pos)
             print()
-            dump(m)
+            # dump(m)
             if done_row(row):
                 unfinished = unfinished - {victim}
             else:
@@ -139,9 +147,14 @@ def main(unfinished):
                     min_pos = row
             print(min_dist)
             print(min_pos)
+
+            r = randrange(100)
+            if r < 10:
+                min_pos = randrange(x_dim)
+
             flip(m,min_pos,col)
             print()
-            dump(m)
+            # dump(m)
             if done_col(col):
                 unfinished = unfinished - {victim}
             else:
@@ -152,5 +165,6 @@ def main(unfinished):
                 unfinished = unfinished | {min_pos}
 
 main(unfinished)
+dump(m)
 # f = flip_in_col(m,2,1)
 # print(f)
