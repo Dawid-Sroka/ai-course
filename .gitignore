@@ -2,3 +2,4 @@
 *_output.txt
 *.gz
 .vscode
+.venv
