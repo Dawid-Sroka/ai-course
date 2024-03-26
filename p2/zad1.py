@@ -1,7 +1,9 @@
-# Dawid Sroka, zad3 z pracowni 1
+# Dawid Sroka, zad1 z pracowni 2
 #
 
 from random import sample, randrange
+from time import time
+from functools import cache
 
 zad = "zad"
 
@@ -13,15 +15,17 @@ input_lines = input_file.readlines()
 x_dim, y_dim = [int(d) for d in input_lines[0].split()]
 R = x_dim + y_dim
 m = [[0 for x in range(y_dim)] for y in range(x_dim)]
-# x_arr = [int(n) for n in input_lines[1:x_dim+1]]
-# print(input_lines[1:x_dim+1])
 x_arr = [[int(d) for d in l.split()] for l in input_lines[1:x_dim+1]]
-# print(x_arr)
-# y_arr = [int(n) for n in input_lines[x_dim+1:]]
 y_arr = [[int(d) for d in l.split()] for l in input_lines[x_dim+1:]]
-# print(y_arr)
+
+r_prob = 15
+time_limit = 8
 
 def rec_opt_dist(input_sequence: list[int], blocks: list[int]):
+    return rec_opt_dist_inner(tuple(input_sequence), tuple(blocks))
+
+@cache
+def rec_opt_dist_inner(input_sequence: tuple[int], blocks: tuple[int]):
     seq_len = len(input_sequence)
     k = len(blocks)
     if k == 0:
@@ -33,38 +37,28 @@ def rec_opt_dist(input_sequence: list[int], blocks: list[int]):
     for i in range(1,seq_len + 1):
         agg_seq[i] = agg_seq[i-1] + input_sequence[i-1]
 
-
-    # aux_prefix = [0] * frame
-    # working_seq = aux_prefix + input_sequence
-
-    # prev_in_frame = 0
     max_in_frame = 0
 
     opt_cost = seq_len
 
-    # for i in range(frame, seq_len - right_bound + frame):
     for i in range(frame, seq_len + 1 - right_bound):
-        # in_frame = prev_in_frame + working_seq[i] - working_seq[i-frame]
         in_frame = agg_seq[i] - agg_seq[i-frame]
         rec_opt = rec_opt_dist(input_sequence[i+1:], blocks[1:])
         if in_frame > max_in_frame:
             max_in_frame = in_frame
-        # prev_in_frame = in_frame
 
-        # count_ones = sum(working_seq[:i+1])
         if i+1 == seq_len + 1:
             count_ones = agg_seq[i]
         else:
             count_ones = agg_seq[i+1]
+
         bits_to_unset = count_ones - in_frame
         bits_to_set = frame - in_frame
         cost = bits_to_unset + bits_to_set + rec_opt
-        # answer = bits_to_unset + bits_to_set
         if cost < opt_cost:
             opt_cost = cost
 
     return opt_cost
-    # output_file.write(str(answer) + '\n')
 
 def dump(m):
     for i in range(x_dim):
@@ -84,20 +78,14 @@ def flip(matrix, row, col):
 
 def flip_in_row(matrix, row, col):
     result = matrix[row].copy()
-    if matrix[row][col] == 0:
-        result[col] = 1
-    else:
-        result[col] = 0
+    result[col] = 1 - result[col]
     return result
 
 def flip_in_col(matrix, row, col):
-    result = []
+    result = [0] * x_dim
     for i in range(x_dim):
-        result.append(m[i][col])
-    if matrix[row][col] == 0:
-        result[row] = 1
-    else:
-        result[row] = 0
+        result[i] = m[i][col]
+    result[row] = 1 - result[row]
     return result
 
 def done_row(row):
@@ -118,6 +106,7 @@ def done_col(col):
 unfinished = set(range(R))
 
 def main(unfinished):
+    start = time()
     while len(unfinished) > 0:
         victim = sample(sorted(unfinished),1)[0]
         if victim < x_dim:
@@ -135,7 +124,7 @@ def main(unfinished):
                     min_pos = col
 
             r = randrange(100)
-            if r < 10:
+            if r < r_prob:
                 min_pos = randrange(y_dim)
 
             flip(m,row,min_pos)
@@ -147,6 +136,10 @@ def main(unfinished):
                 unfinished = unfinished - {min_pos + x_dim}
             else:
                 unfinished = unfinished | {min_pos + x_dim}
+
+            t = time()
+            if t - start > time_limit:
+                return False
         else:
             col = victim - x_dim
             min_dist = x_dim + y_dim
@@ -161,7 +154,7 @@ def main(unfinished):
                     min_pos = row
 
             r = randrange(100)
-            if r < 10:
+            if r < r_prob:
                 min_pos = randrange(x_dim)
 
             flip(m,min_pos,col)
@@ -173,56 +166,20 @@ def main(unfinished):
                 unfinished = unfinished - {min_pos}
             else:
                 unfinished = unfinished | {min_pos}
+            t = time()
+            if t - start > time_limit:
+                return False
 
-main(unfinished)
-dump(m)
+        # dump(m)
+        # print('\n')
+    dump(m)
+    return True
 
+# main(unfinished)
+# dump(m)
 
-
-# Dawid Sroka, zad1 z pracowni 2
-#
-  
-
-# def convert_input_sequence(s: str) -> list:
-#     return [int(c) for c in s]
-
-# input_file = open("zad1_input.txt", 'r')
-# output_file = open("zad1_output.txt", 'w')
-# input_lines = input_file.readlines()
-
-
-
-
-def opt_dist(input_sequence: list[int], D: int) -> None:
-    seq_len = len(input_sequence)
-    aux_prefix = [0] * D
-    working_seq = aux_prefix + input_sequence
-
-    prev_agg = 0
-    max_agg = 0
-
-    for i in range(D, seq_len + D):
-        new_agg = prev_agg + working_seq[i] - working_seq[i-D]
-        if(new_agg > max_agg):
-            max_agg = new_agg
-        prev_agg = new_agg
-
-    count_ones = sum(working_seq)
-    bits_to_unset = count_ones - max_agg
-    bits_to_set = D - max_agg
-    answer = bits_to_unset + bits_to_set
-    
-    output_file.write(str(answer) + '\n')
-
-
-# for line in input_lines:
-#     args = line.split()
-#     input_sequence = convert_input_sequence(args[0])
-#     D = [int(d) for d in args[1:]]
-#     # D = int(args[1])
-    
-#     opt_cost = rec_opt_dist(input_sequence, D)
-#     print(opt_cost)
-#     output_file.write(str(opt_cost) + '\n')
-
-#     # opt_dist(input_sequence, D)
+while True:
+    # dump(m)
+    if main(unfinished) == True:
+        break
+# dump(m)
