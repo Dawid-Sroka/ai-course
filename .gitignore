@@ -3,4 +3,4 @@
 *.gz
 .vscode
 .venv
-.png
+*.png
