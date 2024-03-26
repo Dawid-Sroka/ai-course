@@ -1,23 +1,33 @@
 # Dawid Sroka, zad1 z pracowni 2
 #
+# Powtarzam moje rozwiązanie z5/p1, ale tym razem funkcja opt_dist
+# została zmodyfikowana do funkcji rec_opt_dist. Jest to prosta rekurencyjna
+# implementacja.
+# Jeśli w wierszu W mają być bloki d1, d2, ..., dk to biorę d1
+# i rozpatruje każdą możliwę pozycję j bloku d1 w W (czyli albo maksymalnie na 
+# lewo, albo tak daleko na prawo, żeby wciąż zmieściły się pozostałe bloki).
+# Następnie rekurencyjnie wywołuję się na W[j:] oraz d2,..., dk.
+# Rozpatrując wszystkie pozycje, znajduję minimalny koszt.
+#
+# Oprócz tego zawsze z prawdopodobieństwem r_prob dokonuję nieoptymalnej zmiany
+# oraz zaczynam rozwiązywanie od nowa, jeśli minęł czas time_limit sekund
 
 from random import sample, randrange
 from time import time
 from functools import cache
 
-zad = "zad"
-
-input_file = open(zad + "_input.txt", 'r')
-output_file = open(zad + "_output.txt", 'w')
+input_file = open("zad_input.txt", 'r')
+output_file = open("zad_output.txt", 'w')
 input_lines = input_file.readlines()
 
-
+# Parse the input
 x_dim, y_dim = [int(d) for d in input_lines[0].split()]
 R = x_dim + y_dim
 m = [[0 for x in range(y_dim)] for y in range(x_dim)]
 x_arr = [[int(d) for d in l.split()] for l in input_lines[1:x_dim+1]]
 y_arr = [[int(d) for d in l.split()] for l in input_lines[x_dim+1:]]
 
+# Constants
 r_prob = 15
 time_limit = 8
 
@@ -38,7 +48,6 @@ def rec_opt_dist_inner(input_sequence: tuple[int], blocks: tuple[int]):
         agg_seq[i] = agg_seq[i-1] + input_sequence[i-1]
 
     max_in_frame = 0
-
     opt_cost = seq_len
 
     for i in range(frame, seq_len + 1 - right_bound):
@@ -60,7 +69,7 @@ def rec_opt_dist_inner(input_sequence: tuple[int], blocks: tuple[int]):
 
     return opt_cost
 
-def dump(m):
+def write_solution_to_output(m):
     for i in range(x_dim):
         line = ""
         for j in range(y_dim):
@@ -70,6 +79,7 @@ def dump(m):
                 line += "."
         output_file.write(line+"\n")
 
+# Functions for flipping specified bit in matrix
 def flip(matrix, row, col):
     if matrix[row][col] == 0:
         matrix[row][col] = 1
@@ -88,6 +98,7 @@ def flip_in_col(matrix, row, col):
     result[row] = 1 - result[row]
     return result
 
+# Functions for checking whether row/column satisfies specification
 def done_row(row):
     if rec_opt_dist(m[row], x_arr[row]) == 0:
         return True
@@ -95,14 +106,16 @@ def done_row(row):
         return False
 
 def done_col(col):
-    result = []
+    result = [0] * x_dim
     for i in range(x_dim):
-        result.append(m[i][col])
+        result[i] = m[i][col]
     if rec_opt_dist(result, y_arr[col]) == 0:
         return True
     else:
         return False
-    
+
+
+# Main routine
 unfinished = set(range(R))
 
 def main(unfinished):
@@ -170,16 +183,10 @@ def main(unfinished):
             if t - start > time_limit:
                 return False
 
-        # dump(m)
-        # print('\n')
-    dump(m)
+    write_solution_to_output(m)
     return True
 
-# main(unfinished)
-# dump(m)
-
+# Execute main routine until it solves
 while True:
-    # dump(m)
     if main(unfinished) == True:
         break
-# dump(m)
