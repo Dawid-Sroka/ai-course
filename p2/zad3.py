@@ -1,6 +1,18 @@
 # Dawid Sroka, zad3 z pracowni 2
 #
-
+# Algorytm A*
+# Mając dany stan S = {p1,p2,...,pk}, czyli zbiór pozycji, wartość heurystyki
+# wyliczam tak:
+# dla każdej pozycji p znam minimalną liczbę ruchów k_p, której potrzebuje 
+# komandos, żeby z p dostać się do jakiegoś punktu docelowego.
+# Heurystyka dla stanu S to maksimum z k_p po wszystkich p należących do S.
+#
+# Wartości k_p tablicuję na początku dla wszystkich pozycji w labiryncie
+# puszczając BFSa z każdego punktu docelowego (funkcja dist_from_goal).
+# 
+# Właściwy BFS w A* utrzymuje kolejkę FIFO, gdzie priorytet to para
+# (koszt dotarcia do węzła (czyli liczba wykonanych ruchów) + heurystyka,
+# ciąg wykonanych ruchów). 
 
 from functools import cache
 from queue import PriorityQueue
@@ -106,7 +118,7 @@ def BFS():
         if check_goal(s) == True:
             output_file.write(s.moves_sequence)
             break
-        
+
         new_node = move_state(s, 0)
         pq.put((calc_priority(new_node), new_node.moves_sequence, new_node))
         new_node = move_state(s, 1)
@@ -117,4 +129,3 @@ def BFS():
         pq.put((calc_priority(new_node), new_node.moves_sequence, new_node))
 
 BFS()
-
