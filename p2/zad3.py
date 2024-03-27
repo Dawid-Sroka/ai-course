@@ -1,4 +1,3 @@
-from random import sample, randrange
 from functools import cache
 from queue import PriorityQueue
 
@@ -12,20 +11,17 @@ board = [[char for char in line] for line in input_lines]
 no_rows = len(input_lines)
 no_cols = len(input_lines[0])
 
-
 initial = set()
 goals = set()
 
 class State:
     def __init__(self, positions):
         self.positions = positions
-        self.visited = False
         self.moves_sequence = ''
 
     def dump(self):
         print(self.positions)
         print(self.moves_sequence)
-        print(self.visited)
 
 for i in range(no_rows):
     for j in range(no_cols):
@@ -34,8 +30,6 @@ for i in range(no_rows):
         if board[i][j] in {'G', 'B'}:
             goals.add((i,j))
 
-
-initial = frozenset(initial)
 
 letters = 'LDRU'
 ldru_table = [(0,-1),(1,0),(0,1),(-1,0)]
@@ -66,7 +60,7 @@ def check_goal(state: State):
             return False
     return True
 
-closest_goal = [[100 for x in range(no_cols)] for y in range(no_rows)]
+closest_goal = [[1000 for x in range(no_cols)] for y in range(no_rows)]
 
 def dist_from_goal(goal_pos):
     visited = set()
@@ -104,11 +98,10 @@ for goal in goals:
 
 def calc_priority(state: State):
     dists = [closest_goal[p[0]][p[1]] for p in state.positions]
-    return len(state.moves_sequence)
-    # return max(dists)
+    return len(state.moves_sequence)*1 + 1.0*max(dists)
 
+initial = frozenset(initial)
 root = State(initial)
-root.visited = True
 # root.dump()
 
 state = root
@@ -124,6 +117,7 @@ def BFS():
         g += 1
         p, poss, s = pq.get()
         # s.dump()
+        # print(p)
         if check_goal(s) == True:
             print("finished")
             solution = s.moves_sequence
@@ -133,22 +127,18 @@ def BFS():
         new_node = move_state(s, 0)
         if new_node.positions not in visited:
             visited.add(new_node.positions)
-            new_node.visited = True
             pq.put((calc_priority(new_node),new_node.positions, new_node))
         new_node = move_state(s, 1)
         if new_node.positions not in visited:
             visited.add(new_node.positions)
-            new_node.visited = True
             pq.put((calc_priority(new_node),new_node.positions, new_node))
         new_node = move_state(s, 2)
         if new_node.positions not in visited:
             visited.add(new_node.positions)
-            new_node.visited = True
             pq.put((calc_priority(new_node),new_node.positions, new_node))
         new_node = move_state(s, 3)
         if new_node.positions not in visited:
             visited.add(new_node.positions)
-            new_node.visited = True
             pq.put((calc_priority(new_node),new_node.positions, new_node))
 
 BFS()
