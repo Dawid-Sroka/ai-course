@@ -1,18 +1,27 @@
+# Dawid Sroka, zad3 z pracowni 2
+#
+
+
 from functools import cache
 from queue import PriorityQueue
-
 
 input_file = open("zad_input.txt", 'r')
 output_file = open("zad_output.txt", 'w')
 input_lines = [line.strip('\n') for line in input_file.readlines()]
 
 board = [[char for char in line] for line in input_lines]
-
 no_rows = len(input_lines)
 no_cols = len(input_lines[0])
 
 initial = set()
 goals = set()
+
+for i in range(no_rows):
+    for j in range(no_cols):
+        if board[i][j] in {'S', 'B'}:
+            initial.add((i,j))
+        if board[i][j] in {'G', 'B'}:
+            goals.add((i,j))
 
 class State:
     def __init__(self, positions):
@@ -23,22 +32,13 @@ class State:
         print(self.positions)
         print(self.moves_sequence)
 
-for i in range(no_rows):
-    for j in range(no_cols):
-        if board[i][j] in {'S', 'B'}:
-            initial.add((i,j))
-        if board[i][j] in {'G', 'B'}:
-            goals.add((i,j))
-
-
 letters = 'LDRU'
 ldru_table = [(0,-1),(1,0),(0,1),(-1,0)]
 
 @cache
 def move_indexed(position: tuple, direction: int):
     i, j = position
-    xdelta = ldru_table[direction][0]
-    ydelta = ldru_table[direction][1]
+    xdelta, ydelta = ldru_table[direction]
     if board[i + xdelta][j + ydelta] != '#':
         return (i + xdelta, j + ydelta)
     else:
@@ -71,11 +71,9 @@ def dist_from_goal(goal_pos):
     Q.append((dist,goal_pos))
     while len(Q) > 0:
         d, pos = Q.pop(0)
-        # s.dump()
         i, j = pos
         for k in range(4):
-            xdelta = ldru_table[k][0]
-            ydelta = ldru_table[k][1]
+            xdelta, ydelta = ldru_table[k]
             new_i, new_j = i + xdelta, j + ydelta
             if board[new_i][new_j] != '#' and (new_i, new_j) not in visited:
                 visited.add((new_i, new_j))
@@ -83,18 +81,9 @@ def dist_from_goal(goal_pos):
                     closest_goal[new_i][new_j] = d+1
                 Q.append((d+1, (new_i,new_j)))
 
-
-def print_board(m):
-    for i in range(no_rows):
-        line = ""
-        for j in range(no_cols):
-            line += str(m[i][j]) + " "
-        print(line)
-
 for goal in goals:
     dist_from_goal(goal)
 
-# print_board(closest_goal)
 
 def calc_priority(state: State):
     dists = [closest_goal[p[0]][p[1]] for p in state.positions]
@@ -102,47 +91,28 @@ def calc_priority(state: State):
 
 initial = frozenset(initial)
 root = State(initial)
-# root.dump()
-
-state = root
-# print(calc_priority(state))
 
 visited = set()
 pq = PriorityQueue()
-# visited.add(state.positions)
-pq.put((calc_priority(state), state.positions, state.moves_sequence, state))
+pq.put((calc_priority(root), root.positions, root.moves_sequence, root))
+
 def BFS():
-    g = 0
     while not pq.empty():
-        g += 1
         p, poss, mov_seq, s = pq.get()
         if poss in visited:
             continue
         visited.add(poss)
 
-        # s.dump()
-        # print(p)
         if check_goal(s) == True:
-            print("finished")
-            solution = s.moves_sequence
-            output_file.write(solution)
-            print(solution)
+            output_file.write(s.moves_sequence)
             break
         new_node = move_state(s, 0)
-        # if new_node.positions not in visited:
-        #     visited.add(new_node.positions)
         pq.put((calc_priority(new_node),new_node.positions, new_node.moves_sequence, new_node))
         new_node = move_state(s, 1)
-        # if new_node.positions not in visited:
-        #     visited.add(new_node.positions)
         pq.put((calc_priority(new_node),new_node.positions, new_node.moves_sequence, new_node))
         new_node = move_state(s, 2)
-        # if new_node.positions not in visited:
-        #     visited.add(new_node.positions)
         pq.put((calc_priority(new_node),new_node.positions, new_node.moves_sequence, new_node))
         new_node = move_state(s, 3)
-        # if new_node.positions not in visited:
-        #     visited.add(new_node.positions)
         pq.put((calc_priority(new_node),new_node.positions, new_node.moves_sequence, new_node))
 
 BFS()
