@@ -1,4 +1,5 @@
 from random import sample, randrange
+from functools import cache
 
 
 input_file = open("zad_input.txt", 'r')
@@ -7,13 +8,9 @@ input_lines = [line.strip('\n') for line in input_file.readlines()]
 
 board = [[char for char in line] for line in input_lines]
 
-# print(board)
 no_rows = len(input_lines)
 no_cols = len(input_lines[0])
 
-# print(input_lines)
-# print(no_rows)
-# print(no_cols)
 
 initial = set()
 
@@ -35,26 +32,39 @@ for i in range(no_rows):
 
 initial = frozenset(initial)
 
-def move(position: tuple, direction: str):
+letters = 'LDRU'
+ldru_table = [(0,-1),(1,0),(0,1),(-1,0)]
+
+@cache
+def move_indexed(position: tuple, direction: int):
     i, j = position
-    if direction == 'R' and board[i][j+1] != '#':
-        return (i, j + 1)
-    if direction == 'L' and board[i][j-1] != '#':
-        return (i, j - 1)
-    if direction == 'D' and board[i+1][j] != '#':
-        return (i + 1, j)
-    if direction == 'U' and board[i-1][j] != '#':
-        return (i - 1, j)
+    xdelta = ldru_table[direction][0]
+    ydelta = ldru_table[direction][1]
+    if board[i + xdelta][j + ydelta] != '#':
+        return (i + xdelta, j + ydelta)
     else:
         return position
 
-def move_state(state: State, direction: str) -> State:
+# def move(position: tuple, direction: str):
+#     i, j = position
+#     if direction == 'R' and board[i][j+1] != '#':
+#         return (i, j + 1)
+#     if direction == 'L' and board[i][j-1] != '#':
+#         return (i, j - 1)
+#     if direction == 'D' and board[i+1][j] != '#':
+#         return (i + 1, j)
+#     if direction == 'U' and board[i-1][j] != '#':
+#         return (i - 1, j)
+#     else:
+#         return position
+
+def move_state(state: State, direction: int) -> State:
     newset = set()
     for pos in state.positions:
-        newset.add( move(pos, direction) )
+        newset.add( move_indexed(pos, direction) )
     
     new = State(frozenset(newset))
-    new.moves_sequence = state.moves_sequence + direction
+    new.moves_sequence = state.moves_sequence + letters[direction]
     return new
 
 def check_goal(state: State):
@@ -68,68 +78,18 @@ root = State(initial)
 root.visited = True
 # root.dump()
 
-# state = root
-# random_len = 30
-# moves = 'UDRL'
-# for i in range(random_len):
-#     k = randrange(4)
-#     movex = moves[k]
-#     print(movex)
-#     state = move_state(state, movex)
-
-#state.dump()
-# node = move_state(state, 'L')
-# node.dump()
 
 state = root
+
 steps = 20
-initial_moves = 'L' * steps + 'D' * steps + 'R' * steps +  'U' * steps
-initial_moves = initial_moves * 1
-# unite_blk = 'L'*5 + 'D'*5
-# escape_blk_left = 'LU'*5
-
-# escape_blk_up = 'UR'*5
-
-# # initial_moves = unite_blk+escape_blk_left+'L'* 5+ 'U'*5+escape_blk_up
-# initial_moves = 'L' * steps + 'D' * steps
-
-# # initial_moves = 'L' * 5 + 'D' * 5 + 'R' * steps +  'U' * steps
-
+initial_moves = [0]*steps+[1]*steps+[2]*steps+[3]*steps
+initial_string = ''
 for i in range(len(initial_moves)):
     state = move_state(state, initial_moves[i])
-
-
-def greedy(s: State, sequence: str):
-    for j in range(40):
-        # s.dump()
-
-        next_node = [0,0,0,0]
-        next_node[0] = len(move_state(s, 'R').positions)
-        next_node[1] = len(move_state(s, 'L').positions)
-        next_node[2] = len(move_state(s, 'U').positions)
-        next_node[3] = len(move_state(s, 'D').positions)
-
-        minimal = 1000
-        index = 0
-        for i in range(4):
-            if next_node[i] < minimal:
-                minimal = next_node[i]
-                index = i
-        
-        s = move_state(s, 'RLUD'[index])
-        sequence = sequence + 'RLUD'[index]
-    return s, sequence
-
-# seq = ''
-# state, seq = greedy(state, seq)
-# # print(seq)
-# initial_moves = seq
-
+    initial_string += letters[initial_moves[i]]
 
 state.moves_sequence = ''
 # state.dump()
-
-
 
 # state = State(frozenset({(8, 20)}))
 
@@ -144,26 +104,26 @@ def BFS():
         # s.dump()
         if check_goal(s) == True:
             print("finished")
-            solution = initial_moves + s.moves_sequence
+            solution = initial_string + s.moves_sequence
             output_file.write(solution)
             print(solution)
             break
-        new_node = move_state(s, 'R')
+        new_node = move_state(s, 0)
         if new_node.positions not in visited:
             visited.add(new_node.positions)
             new_node.visited = True
             Q.append(new_node)
-        new_node = move_state(s, 'L')
+        new_node = move_state(s, 1)
         if new_node.positions not in visited:
             visited.add(new_node.positions)
             new_node.visited = True
             Q.append(new_node)
-        new_node = move_state(s, 'D')
+        new_node = move_state(s, 2)
         if new_node.positions not in visited:
             visited.add(new_node.positions)
             new_node.visited = True
             Q.append(new_node)
-        new_node = move_state(s, 'U')
+        new_node = move_state(s, 3)
         if new_node.positions not in visited:
             visited.add(new_node.positions)
             new_node.visited = True
