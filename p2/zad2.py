@@ -95,6 +95,8 @@ initial_moves = initial_moves * 1
 
 # # initial_moves = 'L' * 5 + 'D' * 5 + 'R' * steps +  'U' * steps
 
+for i in range(len(initial_moves)):
+    state = move_state(state, initial_moves[i])
 
 
 def greedy(s: State, sequence: str):
@@ -118,13 +120,11 @@ def greedy(s: State, sequence: str):
         sequence = sequence + 'RLUD'[index]
     return s, sequence
 
-seq = ''
-state, seq = greedy(state, seq)
-# print(seq)
-initial_moves = seq
+# seq = ''
+# state, seq = greedy(state, seq)
+# # print(seq)
+# initial_moves = seq
 
-# for i in range(len(initial_moves)):
-#     state = move_state(state, initial_moves[i])
 
 state.moves_sequence = ''
 # state.dump()
