@@ -50,19 +50,6 @@ def move_indexed(position: tuple, direction: int):
     else:
         return position
 
-# def move(position: tuple, direction: str):
-#     i, j = position
-#     if direction == 'R' and board[i][j+1] != '#':
-#         return (i, j + 1)
-#     if direction == 'L' and board[i][j-1] != '#':
-#         return (i, j - 1)
-#     if direction == 'D' and board[i+1][j] != '#':
-#         return (i + 1, j)
-#     if direction == 'U' and board[i-1][j] != '#':
-#         return (i - 1, j)
-#     else:
-#         return position
-
 def move_state(state: State, direction: int) -> State:
     newset = set()
     for pos in state.positions:
