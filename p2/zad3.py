@@ -105,17 +105,21 @@ root = State(initial)
 # root.dump()
 
 state = root
-print(calc_priority(state))
+# print(calc_priority(state))
 
 visited = set()
 pq = PriorityQueue()
-visited.add(state.positions)
-pq.put((calc_priority(state), state.positions, state))
+# visited.add(state.positions)
+pq.put((calc_priority(state), state.positions, state.moves_sequence, state))
 def BFS():
     g = 0
     while not pq.empty():
         g += 1
-        p, poss, s = pq.get()
+        p, poss, mov_seq, s = pq.get()
+        if poss in visited:
+            continue
+        visited.add(poss)
+
         # s.dump()
         # print(p)
         if check_goal(s) == True:
@@ -125,21 +129,21 @@ def BFS():
             print(solution)
             break
         new_node = move_state(s, 0)
-        if new_node.positions not in visited:
-            visited.add(new_node.positions)
-            pq.put((calc_priority(new_node),new_node.positions, new_node))
+        # if new_node.positions not in visited:
+        #     visited.add(new_node.positions)
+        pq.put((calc_priority(new_node),new_node.positions, new_node.moves_sequence, new_node))
         new_node = move_state(s, 1)
-        if new_node.positions not in visited:
-            visited.add(new_node.positions)
-            pq.put((calc_priority(new_node),new_node.positions, new_node))
+        # if new_node.positions not in visited:
+        #     visited.add(new_node.positions)
+        pq.put((calc_priority(new_node),new_node.positions, new_node.moves_sequence, new_node))
         new_node = move_state(s, 2)
-        if new_node.positions not in visited:
-            visited.add(new_node.positions)
-            pq.put((calc_priority(new_node),new_node.positions, new_node))
+        # if new_node.positions not in visited:
+        #     visited.add(new_node.positions)
+        pq.put((calc_priority(new_node),new_node.positions, new_node.moves_sequence, new_node))
         new_node = move_state(s, 3)
-        if new_node.positions not in visited:
-            visited.add(new_node.positions)
-            pq.put((calc_priority(new_node),new_node.positions, new_node))
+        # if new_node.positions not in visited:
+        #     visited.add(new_node.positions)
+        pq.put((calc_priority(new_node),new_node.positions, new_node.moves_sequence, new_node))
 
 BFS()
 
