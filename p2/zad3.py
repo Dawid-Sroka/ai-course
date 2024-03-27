@@ -113,29 +113,33 @@ def print_board(m):
 for goal in goals:
     dist_from_goal(goal)
 
-print_board(closest_goal)
+# print_board(closest_goal)
 
-
+def calc_priority(state: State):
+    dists = [closest_goal[p[0]][p[1]] for p in state.positions]
+    return len(state.moves_sequence)
+    # return max(dists)
 
 root = State(initial)
 root.visited = True
 # root.dump()
 
 state = root
+print(calc_priority(state))
 
 visited = set()
-PQ = PriorityQueue()
-Q = []
+pq = PriorityQueue()
 visited.add(state.positions)
-Q.append(state)
-g = 0
+pq.put((calc_priority(state), state.positions, state))
 def BFS():
-    while len(Q) > 0:
-        s = Q.pop(0)
+    g = 0
+    while not pq.empty():
+        g += 1
+        p, poss, s = pq.get()
         # s.dump()
         if check_goal(s) == True:
             print("finished")
-            solution = initial_string + s.moves_sequence
+            solution = s.moves_sequence
             output_file.write(solution)
             print(solution)
             break
@@ -143,22 +147,22 @@ def BFS():
         if new_node.positions not in visited:
             visited.add(new_node.positions)
             new_node.visited = True
-            Q.append(new_node)
+            pq.put((calc_priority(new_node),new_node.positions, new_node))
         new_node = move_state(s, 1)
         if new_node.positions not in visited:
             visited.add(new_node.positions)
             new_node.visited = True
-            Q.append(new_node)
+            pq.put((calc_priority(new_node),new_node.positions, new_node))
         new_node = move_state(s, 2)
         if new_node.positions not in visited:
             visited.add(new_node.positions)
             new_node.visited = True
-            Q.append(new_node)
+            pq.put((calc_priority(new_node),new_node.positions, new_node))
         new_node = move_state(s, 3)
         if new_node.positions not in visited:
             visited.add(new_node.positions)
             new_node.visited = True
-            Q.append(new_node)
+            pq.put((calc_priority(new_node),new_node.positions, new_node))
 
-# BFS()
+BFS()
 
