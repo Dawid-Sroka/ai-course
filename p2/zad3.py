@@ -94,26 +94,27 @@ root = State(initial)
 
 visited = set()
 pq = PriorityQueue()
-pq.put((calc_priority(root), root.positions, root.moves_sequence, root))
+pq.put((calc_priority(root), root.moves_sequence, root))
 
 def BFS():
     while not pq.empty():
-        p, poss, mov_seq, s = pq.get()
-        if poss in visited:
+        p, mov_seq, s = pq.get()
+        if s.positions in visited:
             continue
-        visited.add(poss)
+        visited.add(s.positions)
 
         if check_goal(s) == True:
             output_file.write(s.moves_sequence)
             break
+        
         new_node = move_state(s, 0)
-        pq.put((calc_priority(new_node),new_node.positions, new_node.moves_sequence, new_node))
+        pq.put((calc_priority(new_node), new_node.moves_sequence, new_node))
         new_node = move_state(s, 1)
-        pq.put((calc_priority(new_node),new_node.positions, new_node.moves_sequence, new_node))
+        pq.put((calc_priority(new_node), new_node.moves_sequence, new_node))
         new_node = move_state(s, 2)
-        pq.put((calc_priority(new_node),new_node.positions, new_node.moves_sequence, new_node))
+        pq.put((calc_priority(new_node), new_node.moves_sequence, new_node))
         new_node = move_state(s, 3)
-        pq.put((calc_priority(new_node),new_node.positions, new_node.moves_sequence, new_node))
+        pq.put((calc_priority(new_node), new_node.moves_sequence, new_node))
 
 BFS()
 
