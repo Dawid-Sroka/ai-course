@@ -1,4 +1,3 @@
-from random import sample, randrange
 from functools import cache
 
 
@@ -7,23 +6,19 @@ output_file = open("zad_output.txt", 'w')
 input_lines = [line.strip('\n') for line in input_file.readlines()]
 
 board = [[char for char in line] for line in input_lines]
-
 no_rows = len(input_lines)
 no_cols = len(input_lines[0])
-
 
 initial = set()
 
 class State:
     def __init__(self, positions):
         self.positions = positions
-        self.visited = False
         self.moves_sequence = ''
 
     def dump(self):
         print(self.positions)
         print(self.moves_sequence)
-        print(self.visited)
 
 for i in range(no_rows):
     for j in range(no_cols):
@@ -45,19 +40,6 @@ def move_indexed(position: tuple, direction: int):
     else:
         return position
 
-# def move(position: tuple, direction: str):
-#     i, j = position
-#     if direction == 'R' and board[i][j+1] != '#':
-#         return (i, j + 1)
-#     if direction == 'L' and board[i][j-1] != '#':
-#         return (i, j - 1)
-#     if direction == 'D' and board[i+1][j] != '#':
-#         return (i + 1, j)
-#     if direction == 'U' and board[i-1][j] != '#':
-#         return (i - 1, j)
-#     else:
-#         return position
-
 def move_state(state: State, direction: int) -> State:
     newset = set()
     for pos in state.positions:
@@ -75,29 +57,21 @@ def check_goal(state: State):
     return True
 
 root = State(initial)
-root.visited = True
-# root.dump()
 
-
-state = root
 
 steps = 20
 initial_moves = [0]*steps+[1]*steps+[2]*steps+[3]*steps
 initial_string = ''
 for i in range(len(initial_moves)):
-    state = move_state(state, initial_moves[i])
+    root = move_state(root, initial_moves[i])
     initial_string += letters[initial_moves[i]]
 
-state.moves_sequence = ''
-# state.dump()
-
-# state = State(frozenset({(8, 20)}))
-
+root.moves_sequence = ''
 
 visited = set()
 Q = []
-visited.add(state.positions)
-Q.append(state)
+visited.add(root.positions)
+Q.append(root)
 def BFS():
     while len(Q) > 0:
         s = Q.pop(0)
@@ -111,22 +85,18 @@ def BFS():
         new_node = move_state(s, 0)
         if new_node.positions not in visited:
             visited.add(new_node.positions)
-            new_node.visited = True
             Q.append(new_node)
         new_node = move_state(s, 1)
         if new_node.positions not in visited:
             visited.add(new_node.positions)
-            new_node.visited = True
             Q.append(new_node)
         new_node = move_state(s, 2)
         if new_node.positions not in visited:
             visited.add(new_node.positions)
-            new_node.visited = True
             Q.append(new_node)
         new_node = move_state(s, 3)
         if new_node.positions not in visited:
             visited.add(new_node.positions)
-            new_node.visited = True
             Q.append(new_node)
 
 BFS()
