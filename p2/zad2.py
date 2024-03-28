@@ -1,3 +1,10 @@
+# Dawid Sroka, zad2 z pracowni 2
+#
+# W pierwszej fazie wykonuję stały zestaw ruchów, po 20 w każdą stronę.
+# Następnie przeszukuję BFSem grafów, gdzie wierzchołki to zbiory możliwych
+# pozycji komandosa.
+
+
 from functools import cache
 
 
