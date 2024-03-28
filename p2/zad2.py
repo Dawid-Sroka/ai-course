@@ -84,10 +84,8 @@ def BFS():
         s = Q.pop(0)
         # s.dump()
         if check_goal(s) == True:
-            print("finished")
             solution = initial_string + s.moves_sequence
             output_file.write(solution)
-            print(solution)
             break
         new_node = move_state(s, 0)
         if new_node.positions not in visited:
