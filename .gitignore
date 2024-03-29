@@ -1,6 +1,5 @@
 *_input.txt
 *_output.txt
-*.gz
 .vscode
 .venv
 *.png
