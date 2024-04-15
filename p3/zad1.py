@@ -165,7 +165,7 @@ def main(work_board: list[list[int]]):
     for i in range(x_dim):
         borders_infer(work_board[i], x_arr[i])
 
-    pq = PriorityQueue()
+    pq = Queue()
     for w in range(R):
         if w < x_dim:
             row = w
@@ -177,7 +177,7 @@ def main(work_board: list[list[int]]):
         priority, w, possibles = pq.get(0)
         if w < x_dim:
             row = w
-            print("w = " + str(w))
+            print("w = " + str(w) + ", priority = " + str(priority))
             if rec_opt_dist([max(0, i) for i in work_board[row]], x_arr[row]) != 0 :
                 possibles = iter_consider(w, tuple(work_board[row]), possibles)
                 print(len(possibles))
