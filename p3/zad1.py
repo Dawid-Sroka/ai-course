@@ -11,19 +11,19 @@ output_file = open("zad_output.txt", 'w')
 input_lines = input_file.readlines()
 
 # Parse the input
-x_dim, y_dim = [int(d) for d in input_lines[0].split()]
-R = x_dim + y_dim
-work_board = [[0 for x in range(y_dim)] for y in range(x_dim)]
-board = [[0 for x in range(y_dim)] for y in range(x_dim)]
-x_arr = [[int(d) for d in l.split()] for l in input_lines[1:x_dim+1]]
+no_rows, no_cols = [int(d) for d in input_lines[0].split()]
+R = no_rows + no_cols
+work_board = [[0 for x in range(no_cols)] for y in range(no_rows)]
+board = [[0 for x in range(no_cols)] for y in range(no_rows)]
+x_arr = [[int(d) for d in l.split()] for l in input_lines[1:no_rows+1]]
 x_sum = [[0, sum(blocks)] for blocks in x_arr]
-y_arr = [[int(d) for d in l.split()] for l in input_lines[x_dim+1:]]
+y_arr = [[int(d) for d in l.split()] for l in input_lines[no_rows+1:]]
 y_sum = [[0, sum(blocks)] for blocks in y_arr]
 
 def dump(m):
-    for i in range(x_dim):
+    for i in range(no_rows):
         line = ""
-        for j in range(y_dim):
+        for j in range(no_cols):
             if m[i][j] == 1:
                 line += "#"
             elif m[i][j] == -1:
@@ -34,9 +34,9 @@ def dump(m):
     print("")
 
 def write_solution_to_output(m):
-    for i in range(x_dim):
+    for i in range(no_rows):
         line = ""
-        for j in range(y_dim):
+        for j in range(no_cols):
             if m[i][j] == 1:
                 line += "#"
             else:
@@ -159,10 +159,10 @@ def all_zeros(idx, possibles):
     return True
 
 
-def iter_consider(array: tuple, possibles: set[tuple]):
+def iter_consider(array: tuple, possibles: set[tuple]) -> tuple:
     """Iterate over possible values of array and delete impossible values.
     Then for every cell in row iterate over possible values and check whether
-    0 or 1 can be set for sure. If so, update board """
+    0 or 1 can be set for sure. Return new_array with updated knowledge"""
     for p in possibles:
         if consider(array, p) == False:
             possibles = possibles - {p}
@@ -180,61 +180,69 @@ def update_work_board(idx: int, max_row: int, new_array: tuple, board):
         board[row_idx] = list(new_array)
     else:
         col_idx = idx - max_row
-        for i in range(x_dim):
+        for i in range(no_rows):
             board[i][col_idx] = new_array[i]
     return board
 
 def main(work_board: list[list[int]]):
     dump(work_board)
-    for i in range(x_dim):
+    for i in range(no_rows):
         added = overlapping_infer(work_board[i], x_arr[i])
         x_sum[i][0] += added
 
-    for j in range(y_dim):
-        col = [work_board[r][j] for r in range(x_dim)]
-        added = overlapping_infer(col, y_arr[j])
-        borders_infer(col,y_arr[j])
+    for j in range(no_cols):
+        col_idx = [work_board[r][j] for r in range(no_rows)]
+        added = overlapping_infer(col_idx, y_arr[j])
+        borders_infer(col_idx,y_arr[j])
 
-        for r in range(x_dim):
-            work_board[r][j] = col[r]
-    for i in range(x_dim):
+        for r in range(no_rows):
+            work_board[r][j] = col_idx[r]
+    for i in range(no_rows):
         borders_infer(work_board[i], x_arr[i])
 
-    sleep(1)
+    # sleep(1)
     dump(work_board)
 
     pq = Queue()
     for w in range(R):
-        if w < x_dim:
-            row = w
-            possibles = generate_possible(x_dim, x_arr[row])
-            pq.put((-len(possibles),row, possibles))
-        # else:
-        #     col = w - x_dim
-        #     possibles = generate_possible(y_dim, y_arr[col])
-        #     pq.put((-len(possibles),col, possibles))
+        if w < no_rows:
+            row_idx = w
+            possibles = generate_possible(no_rows, x_arr[row_idx])
+            pq.put((-len(possibles),w, possibles))
+        else:
+            col_idx = w - no_rows
+            possibles = generate_possible(no_cols, y_arr[col_idx])
+            pq.put((-len(possibles),w, possibles))
 
     dump(work_board)
 
     
     while pq.qsize() > 0:
         priority, w, possibles = pq.get(0)
-        if w < x_dim:
-            row = w
-            new_row, possibles = iter_consider(tuple(work_board[row]), possibles)
-            work_board = update_work_board(row, x_dim, new_row, work_board)
-            row_array = [max(0, i) for i in work_board[row]]
-            if rec_opt_dist(row_array, x_arr[row]) != 0 :
-                pq.put((-len(possibles),row, possibles))
-        # else:
-        #     col = w - x_dim
-        #     print("w = " + str(col) + ", priority = " + str(priority))
-        #     if rec_opt_dist([max(0, i) for i in work_board[col]], x_arr[col]) != 0 :
-        #         work_board, possibles = iter_consider(col, tuple(work_board[row]), possibles, work_board)
-        #         print(len(possibles))
-        #         pq.put((-len(possibles),col, possibles))
+        if w < no_rows:
+            row_idx = w
+            new_row, possibles = iter_consider(tuple(work_board[row_idx]), possibles)
+            work_board = update_work_board(w, no_rows, new_row, work_board)
+
+            row_array = [max(0, i) for i in work_board[row_idx]]
+            if rec_opt_dist(row_array, x_arr[row_idx]) != 0 :
+                pq.put((-len(possibles),w, possibles))
+
+        else:
+            col_idx = w - no_rows
+
+            prev_col = [0]*no_rows
+            for i in range(no_rows):
+                prev_col[i] = work_board[i][col_idx]
+            new_col, possibles = iter_consider(tuple(prev_col), possibles)
+            work_board = update_work_board(w, no_rows, new_col, work_board)
+
+            col_array = [max(0, i) for i in new_col]
+            if rec_opt_dist(col_array, y_arr[col_idx]) != 0 :
+                pq.put((-len(possibles),w, possibles))
+
         dump(work_board)
-        sleep(0.5)
+        # sleep(0.2)
 
 
     
@@ -253,4 +261,4 @@ print(dist)
 
 
 main(work_board)
-# dump(work_board)
+write_solution_to_output(work_board)
