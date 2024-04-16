@@ -159,21 +159,30 @@ def all_zeros(idx, possibles):
     return True
 
 
-def iter_consider(idx: int, array: tuple, possibles: set[tuple], board):
+def iter_consider(array: tuple, possibles: set[tuple]):
     """Iterate over possible values of array and delete impossible values.
     Then for every cell in row iterate over possible values and check whether
     0 or 1 can be set for sure. If so, update board """
     for p in possibles:
         if consider(array, p) == False:
             possibles = possibles - {p}
+    new_array = [0]* len(array)
     for i in range(len(array)):
         if all_ones(i, possibles):
-            board[idx][i] = 1
+            new_array[i] = 1
         if all_zeros(i, possibles):
-            board[idx][i] = -1
-    return board, possibles
+            new_array[i] = -1
+    return tuple(new_array), possibles
 
-
+def update_work_board(idx: int, max_row: int, new_array: tuple, board):
+    if idx < max_row:
+        row_idx = idx
+        board[row_idx] = list(new_array)
+    else:
+        col_idx = idx - max_row
+        for i in range(x_dim):
+            board[i][col_idx] = new_array[i]
+    return board
 
 def main(work_board: list[list[int]]):
     dump(work_board)
@@ -199,9 +208,6 @@ def main(work_board: list[list[int]]):
         if w < x_dim:
             row = w
             possibles = generate_possible(x_dim, x_arr[row])
-
-            # work_board, possibles = iter_consider(w, tuple(work_board[row]), possibles, work_board)
-
             pq.put((-len(possibles),row, possibles))
         # else:
         #     col = w - x_dim
@@ -212,13 +218,11 @@ def main(work_board: list[list[int]]):
 
     
     while pq.qsize() > 0:
-        print("qsize = " + str(pq.qsize()))
         priority, w, possibles = pq.get(0)
         if w < x_dim:
             row = w
-            print("w = " + str(w) + ", priority = " + str(priority))
-            work_board, possibles = iter_consider(w, tuple(work_board[row]), possibles, work_board)
-            print(len(possibles))
+            new_row, possibles = iter_consider(tuple(work_board[row]), possibles)
+            work_board = update_work_board(row, x_dim, new_row, work_board)
             row_array = [max(0, i) for i in work_board[row]]
             if rec_opt_dist(row_array, x_arr[row]) != 0 :
                 pq.put((-len(possibles),row, possibles))
