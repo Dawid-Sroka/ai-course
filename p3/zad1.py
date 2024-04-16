@@ -148,6 +148,10 @@ def consider(array: tuple, p: tuple):
 
 def all_ones(idx, possibles):
     for p in possibles:
+        if idx >= len(p) :
+            print(idx)
+            print(possibles)
+            raise IndexError
         if p[idx] == 0:
             return False
     return True
@@ -185,7 +189,7 @@ def update_work_board(idx: int, max_row: int, new_array: tuple, board):
     return board
 
 def main(work_board: list[list[int]]):
-    dump(work_board)
+    # dump(work_board)
     for i in range(no_rows):
         added = overlapping_infer(work_board[i], x_arr[i])
         x_sum[i][0] += added
@@ -201,24 +205,25 @@ def main(work_board: list[list[int]]):
         borders_infer(work_board[i], x_arr[i])
 
     # sleep(1)
-    dump(work_board)
+    # dump(work_board)
 
     pq = Queue()
     for w in range(R):
         if w < no_rows:
             row_idx = w
-            possibles = generate_possible(no_rows, x_arr[row_idx])
+            possibles = generate_possible(no_cols, x_arr[row_idx])
             pq.put((-len(possibles),w, possibles))
         else:
             col_idx = w - no_rows
-            possibles = generate_possible(no_cols, y_arr[col_idx])
+            possibles = generate_possible(no_rows, y_arr[col_idx])
             pq.put((-len(possibles),w, possibles))
 
-    dump(work_board)
+    # dump(work_board)
 
     
     while pq.qsize() > 0:
         priority, w, possibles = pq.get(0)
+
         if w < no_rows:
             row_idx = w
             new_row, possibles = iter_consider(tuple(work_board[row_idx]), possibles)
@@ -241,23 +246,8 @@ def main(work_board: list[list[int]]):
             if rec_opt_dist(col_array, y_arr[col_idx]) != 0 :
                 pq.put((-len(possibles),w, possibles))
 
-        dump(work_board)
+        # dump(work_board)
         # sleep(0.2)
-
-
-    
-possibles = generate_possible(8, [1,4])
-for i in range(len(possibles)):
-    print(list(possibles)[i])
-# possibles = iter_consider(0, tuple([0,1,0,0,0,0,0,0]), possibles)
-print("")
-for i in range(len(possibles)):
-    print(list(possibles)[i])
-
-
-dist = rec_opt_dist([0,1,1,1,1,1,1,0,1], [6,1])
-print(dist)
-
 
 
 main(work_board)
