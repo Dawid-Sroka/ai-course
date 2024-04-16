@@ -4,6 +4,7 @@
 from random import sample, randrange
 from functools import cache
 from queue import PriorityQueue, Queue
+from time import sleep
 
 input_file = open("zad_input.txt", 'r')
 output_file = open("zad_output.txt", 'w')
@@ -30,6 +31,7 @@ def dump(m):
             else:
                 line += "?"
         print(line)
+    print("")
 
 def write_solution_to_output(m):
     for i in range(x_dim):
@@ -40,6 +42,8 @@ def write_solution_to_output(m):
             else:
                 line += "."
         output_file.write(line+"\n")
+
+# ===============================================        
 
 def overlapping_infer(input_sequence: list[int], blocks: list[int]):
     k = len(blocks)
@@ -72,12 +76,12 @@ def borders_infer(input_sequence: list[int], blocks: list[int]):
             input_sequence[dim - blocks[k-1] - 1] = -1
     return added
 
+
 def generate_possible(dim:int, blocks: list[int]):
     possibles = set()
     prevs = ()
     iter_possible(dim, dim, blocks, possibles, prevs)
     return possibles
-
 
 def iter_possible(dim: int, n:int, blocks: list[int], poss_set, prevs):
     k = len(blocks)
@@ -142,15 +146,37 @@ def consider(array: tuple, p: tuple):
             return False
     return True
 
-def iter_consider(idx: int, array: tuple, possibles: set[tuple]):
+def all_ones(idx, possibles):
+    for p in possibles:
+        if p[idx] == 0:
+            return False
+    return True
+
+def all_zeros(idx, possibles):
+    for p in possibles:
+        if p[idx] == 1:
+            return False
+    return True
+
+
+def iter_consider(idx: int, array: tuple, possibles: set[tuple], board):
+    """Iterate over possible values of array and delete impossible values.
+    Then for every cell in row iterate over possible values and check whether
+    0 or 1 can be set for sure. If so, update board """
     for p in possibles:
         if consider(array, p) == False:
             possibles = possibles - {p}
-    return possibles
+    for i in range(len(array)):
+        if all_ones(i, possibles):
+            board[idx][i] = 1
+        if all_zeros(i, possibles):
+            board[idx][i] = -1
+    return board, possibles
 
 
 
 def main(work_board: list[list[int]]):
+    dump(work_board)
     for i in range(x_dim):
         added = overlapping_infer(work_board[i], x_arr[i])
         x_sum[i][0] += added
@@ -165,38 +191,62 @@ def main(work_board: list[list[int]]):
     for i in range(x_dim):
         borders_infer(work_board[i], x_arr[i])
 
+    sleep(1)
+    dump(work_board)
+
     pq = Queue()
     for w in range(R):
         if w < x_dim:
             row = w
-            possibles = generate_possible(x_dim, x_arr[w])
-            pq.put((-len(possibles),w, possibles))
-        
+            possibles = generate_possible(x_dim, x_arr[row])
+
+            # work_board, possibles = iter_consider(w, tuple(work_board[row]), possibles, work_board)
+
+            pq.put((-len(possibles),row, possibles))
+        # else:
+        #     col = w - x_dim
+        #     possibles = generate_possible(y_dim, y_arr[col])
+        #     pq.put((-len(possibles),col, possibles))
+
+    dump(work_board)
+
+    
     while pq.qsize() > 0:
         print("qsize = " + str(pq.qsize()))
         priority, w, possibles = pq.get(0)
         if w < x_dim:
             row = w
             print("w = " + str(w) + ", priority = " + str(priority))
-            if rec_opt_dist([max(0, i) for i in work_board[row]], x_arr[row]) != 0 :
-                possibles = iter_consider(w, tuple(work_board[row]), possibles)
-                print(len(possibles))
+            work_board, possibles = iter_consider(w, tuple(work_board[row]), possibles, work_board)
+            print(len(possibles))
+            row_array = [max(0, i) for i in work_board[row]]
+            if rec_opt_dist(row_array, x_arr[row]) != 0 :
                 pq.put((-len(possibles),row, possibles))
+        # else:
+        #     col = w - x_dim
+        #     print("w = " + str(col) + ", priority = " + str(priority))
+        #     if rec_opt_dist([max(0, i) for i in work_board[col]], x_arr[col]) != 0 :
+        #         work_board, possibles = iter_consider(col, tuple(work_board[row]), possibles, work_board)
+        #         print(len(possibles))
+        #         pq.put((-len(possibles),col, possibles))
+        dump(work_board)
+        sleep(0.5)
 
 
     
 possibles = generate_possible(8, [1,4])
 for i in range(len(possibles)):
     print(list(possibles)[i])
-possibles = iter_consider(0, tuple([0,1,0,0,0,0,0,0]), possibles)
+# possibles = iter_consider(0, tuple([0,1,0,0,0,0,0,0]), possibles)
 print("")
 for i in range(len(possibles)):
     print(list(possibles)[i])
 
 
-dist = rec_opt_dist([1,0,1,1,1,0,0,0], [1,4])
+dist = rec_opt_dist([0,1,1,1,1,1,1,0,1], [6,1])
 print(dist)
 
 
+
 main(work_board)
-dump(work_board)
+# dump(work_board)
