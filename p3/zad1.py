@@ -213,21 +213,19 @@ def main(work_board: list[list[int]]):
     # sleep(1)
     # dump(work_board)
 
-    pq = Queue()
+    q = Queue()
     for w in range(R):
         if w < no_rows:
             row_idx = w
             possibles = generate_possible(no_cols, x_arr[row_idx])
-            pq.put((-len(possibles),w, possibles))
+            q.put((w, possibles))
         else:
             col_idx = w - no_rows
             possibles = generate_possible(no_rows, y_arr[col_idx])
-            pq.put((-len(possibles),w, possibles))
-
-
+            q.put((w, possibles))
     
-    while pq.qsize() > 0:
-        priority, w, possibles = pq.get(0)
+    while q.qsize() > 0:
+        w, possibles = q.get(0)
         # dump(work_board)
 
         if w < no_rows:
@@ -237,7 +235,7 @@ def main(work_board: list[list[int]]):
 
             row_array = [max(0, i) for i in work_board[row_idx]]
             if rec_opt_dist(row_array, x_arr[row_idx]) != 0 :
-                pq.put((-len(possibles),w, possibles))
+                q.put((w, possibles))
 
         else:
             col_idx = w - no_rows
@@ -249,7 +247,7 @@ def main(work_board: list[list[int]]):
 
             col_array = [max(0, i) for i in new_col]
             if rec_opt_dist(col_array, y_arr[col_idx]) != 0 :
-                pq.put((-len(possibles),w, possibles))
+                q.put((w, possibles))
 
         # dump(work_board)
         # sleep(0.1)
