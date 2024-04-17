@@ -3,7 +3,7 @@
 
 from random import sample, randrange
 from functools import cache
-from queue import PriorityQueue, Queue
+from queue import Queue
 from time import sleep
 
 input_file = open("zad_input.txt", 'r')
@@ -84,6 +84,9 @@ def generate_possible(dim:int, blocks: list[int]):
     return possibles
 
 def iter_possible(dim: int, n:int, blocks: list[int], poss_set, prevs):
+    """ niezmienniki
+    -prevs to prefix tablicy, który mieści poprzednie bloki i kończy się pustym
+    """
     k = len(blocks)
     if k == 0:
         prevs = prevs[:-1]
@@ -91,18 +94,21 @@ def iter_possible(dim: int, n:int, blocks: list[int], poss_set, prevs):
         prevs = prevs + (0,)*(dim-l)
         poss_set.add(prevs)
     else:
-        for j in range(k):
-            j += 1  # index from 1
-            left = sum(blocks[:j-1]) + j-1
-            right = n - (sum(blocks[j-1:]) + k - j)
-            for i in range(left, right+1):
-                new_block = (0,)*i + (1,)*blocks[j-1] + (0,)
-                iter_possible(dim, n - (i+blocks[j-1]+1), blocks[1:], poss_set, prevs+new_block)
+        left = 0
+        right = n - (sum(blocks) + k - 1)
+        for i in range(left, right+1):
+            new_block = (0,)*i + (1,)*blocks[0] + (0,)
+            new_n = n - (i+blocks[0]+1)
+            new_blocks = blocks[1:]
+            new_prevs = prevs+new_block
+            iter_possible(dim, new_n, new_blocks, poss_set, new_prevs)
+
+
 
 def rec_opt_dist(input_sequence: list[int], blocks: list[int]):
     return rec_opt_dist_inner(tuple(input_sequence), tuple(blocks))
 
-@cache
+# @cache
 def rec_opt_dist_inner(input_sequence: tuple[int], blocks: tuple[int]):
     seq_len = len(input_sequence)
     k = len(blocks)
@@ -218,11 +224,11 @@ def main(work_board: list[list[int]]):
             possibles = generate_possible(no_rows, y_arr[col_idx])
             pq.put((-len(possibles),w, possibles))
 
-    # dump(work_board)
 
     
     while pq.qsize() > 0:
         priority, w, possibles = pq.get(0)
+        # dump(work_board)
 
         if w < no_rows:
             row_idx = w
@@ -235,7 +241,6 @@ def main(work_board: list[list[int]]):
 
         else:
             col_idx = w - no_rows
-
             prev_col = [0]*no_rows
             for i in range(no_rows):
                 prev_col[i] = work_board[i][col_idx]
@@ -247,8 +252,7 @@ def main(work_board: list[list[int]]):
                 pq.put((-len(possibles),w, possibles))
 
         # dump(work_board)
-        # sleep(0.2)
-
+        # sleep(0.1)
 
 main(work_board)
 write_solution_to_output(work_board)
