@@ -14,11 +14,8 @@ input_lines = input_file.readlines()
 no_rows, no_cols = [int(d) for d in input_lines[0].split()]
 R = no_rows + no_cols
 work_board = [[0 for x in range(no_cols)] for y in range(no_rows)]
-board = [[0 for x in range(no_cols)] for y in range(no_rows)]
 x_arr = [[int(d) for d in l.split()] for l in input_lines[1:no_rows+1]]
-x_sum = [[0, sum(blocks)] for blocks in x_arr]
 y_arr = [[int(d) for d in l.split()] for l in input_lines[no_rows+1:]]
-y_sum = [[0, sum(blocks)] for blocks in y_arr]
 
 def dump(m):
     for i in range(no_rows):
@@ -44,38 +41,6 @@ def write_solution_to_output(m):
         output_file.write(line+"\n")
 
 # ===============================================        
-
-def overlapping_infer(input_sequence: list[int], blocks: list[int]):
-    k = len(blocks)
-    added = 0
-    for j in range(k):
-        j += 1  # index from 1
-        left = sum(blocks[:j]) + j-1
-        right = len(input_sequence) - (sum(blocks[j-1:]) + k - j)
-        for i in range(right, left):
-            input_sequence[i] = 1
-            added += 1
-    return added
-
-
-def borders_infer(input_sequence: list[int], blocks: list[int]):
-    dim = len(input_sequence)
-    k = len(blocks)
-    added = 0
-    if input_sequence[0] == 1:
-        for i in range(blocks[0]):
-            input_sequence[i] = 1
-            added += 1
-        if blocks[0] < dim:
-            input_sequence[blocks[0]] = -1
-    if input_sequence[dim-1] == 1:
-        for i in range(dim - blocks[k-1],dim):
-            input_sequence[i] = 1
-            added += 1
-        if blocks[k-1] < dim:
-            input_sequence[dim - blocks[k-1] - 1] = -1
-    return added
-
 
 def generate_possible(dim:int, blocks: list[int]):
     possibles = set()
@@ -195,24 +160,6 @@ def update_work_board(idx: int, max_row: int, new_array: tuple, board):
     return board
 
 def main(work_board: list[list[int]]):
-    # dump(work_board)
-    for i in range(no_rows):
-        added = overlapping_infer(work_board[i], x_arr[i])
-        x_sum[i][0] += added
-
-    for j in range(no_cols):
-        col_idx = [work_board[r][j] for r in range(no_rows)]
-        added = overlapping_infer(col_idx, y_arr[j])
-        borders_infer(col_idx,y_arr[j])
-
-        for r in range(no_rows):
-            work_board[r][j] = col_idx[r]
-    for i in range(no_rows):
-        borders_infer(work_board[i], x_arr[i])
-
-    # sleep(1)
-    # dump(work_board)
-
     q = Queue()
     for w in range(R):
         if w < no_rows:
