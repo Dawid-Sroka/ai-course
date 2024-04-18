@@ -5,6 +5,7 @@ from random import sample, randrange
 from functools import cache
 from queue import Queue
 from time import sleep
+from copy import deepcopy
 
 input_file = open("zad_input.txt", 'r')
 output_file = open("zad_output.txt", 'w')
@@ -162,7 +163,7 @@ def update_work_board(idx: int, max_row: int, new_array: tuple, board):
 
 def infering_with_bt(work_board: list[list[int]]):
     
-    finished_arrays = set()
+    # finished_arrays = set()
     q = Queue()
     # finished = set()
     for w in range(R):
@@ -177,11 +178,9 @@ def infering_with_bt(work_board: list[list[int]]):
             q.put((w, possibles))
 
 
-    
-    board_flag = False
-
     # cnt = 0
     while q.qsize() > 0:
+        # print("get from queue")
         w, possibles = q.get(0)
         no_before = len(possibles)
         # dump(work_board)
@@ -189,18 +188,15 @@ def infering_with_bt(work_board: list[list[int]]):
         if w < no_rows:
             row_idx = w
             new_row, possibles = iter_consider(tuple(work_board[row_idx]), possibles)
-            if possibles == set():
-                print("contradiction!")
-                return False
-            if len(possibles) < no_before:
-                board_flag = True
-                q.put((w, possibles))
-            elif  no_before == 1:
-                finished_arrays = finished_arrays | {w}
             work_board = update_work_board(w, no_rows, new_row, work_board)
-
-            # row_array = [max(0, i) for i in work_board[row_idx]]
-            # if rec_opt_dist(row_array, x_arr[row_idx]) != 0 :
+            if possibles == set():
+                # print("contradiction!")
+                return False, work_board
+            no_current = len(possibles)
+            if no_current < no_before:
+                q.put((w, possibles))
+            # if no_current == 1:
+            #     finished_arrays = finished_arrays | {w}
 
         else:
             col_idx = w - no_rows
@@ -208,14 +204,14 @@ def infering_with_bt(work_board: list[list[int]]):
             for i in range(no_rows):
                 prev_col[i] = work_board[i][col_idx]
             new_col, possibles = iter_consider(tuple(prev_col), possibles)
-            if possibles == set():
-                return False
-            if len(possibles) < no_before:
-                board_flag = True
-                q.put((w, possibles))
-            elif no_before == 1:
-                finished_arrays = finished_arrays | {w}
             work_board = update_work_board(w, no_rows, new_col, work_board)
+            if possibles == set():
+                return False, work_board
+            no_current = len(possibles)
+            if no_current < no_before:
+                q.put((w, possibles))
+            # if no_current == 1:
+            #     finished_arrays = finished_arrays | {w}
 
             # col_array = [max(0, i) for i in new_col]
             # if rec_opt_dist(col_array, y_arr[col_idx]) != 0 :
@@ -230,33 +226,46 @@ def infering_with_bt(work_board: list[list[int]]):
     #     else:
     #         cnt = 0
 
-    dump(work_board)
+    flag_return = True
+    for i in range(no_rows):
+        for j in range(no_cols):
+            if work_board[i][j] == 0:
+                flag_return = False
+    if flag_return == True:
+        return True, work_board
+
+    # if len(finished_arrays) == R:
+    #     return True
+
+    # dump(work_board)
     # sleep(1)
     # print("Made assumption")
 
     changed = False
     while changed == False:
+        # print("looking for unfinished cell")
         rand_pxl = int(randrange(no_cols * no_rows))
-        rand_row = rand_pxl // no_rows
+        rand_row = rand_pxl // no_cols
         rand_col = rand_pxl % no_cols
-        if work_board[rand_row][rand_col] == 0 and \
-            rand_row not in finished_arrays and \
-            rand_col not in finished_arrays:
+        if work_board[rand_row][rand_col] == 0: # and \
+            # rand_row not in finished_arrays and \
+            # rand_col not in finished_arrays:
             changed = True
     
-    rec_work_board = work_board
+    rec_work_board = deepcopy(work_board)
     rec_work_board[rand_row][rand_col] = 1
-    print("Made assumption")
+    # print("Made assumption " + str(rand_row) + ", " + str(rand_col))
     # rec_q = q
-    recursive_result = infering_with_bt(rec_work_board) 
+    recursive_result, rec_work_board = infering_with_bt(rec_work_board) 
     if recursive_result == False:
-        print("Error!")
-        rec_work_board[rand_row][rand_col] = -1
-        recursive_result = infering_with_bt(rec_work_board) 
+        # print("Error!")
+        rec_work_board2 = deepcopy(work_board)
+        rec_work_board2[rand_row][rand_col] = -1
+        recursive_result, rec_work_board2 = infering_with_bt(rec_work_board2) 
         # if recursive_result == False:
-        return recursive_result
+        return recursive_result, rec_work_board2
     else:
-        return True
+        return True, rec_work_board
 
     # return True
 
@@ -274,8 +283,7 @@ def infering_with_bt(work_board: list[list[int]]):
 #         q.put((w, possibles))
 
 
-result = infering_with_bt(work_board)
-if result == True:
-    write_solution_to_output(work_board)
-else:
+result, work_board = infering_with_bt(work_board)
+if result == False:
     print("There is no solution!")
+write_solution_to_output(work_board)
