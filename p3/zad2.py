@@ -160,11 +160,27 @@ def update_work_board(idx: int, max_row: int, new_array: tuple, board):
     return board
 
 
-def infering_with_bt(q: Queue, finished_arrays: set, work_board: list[list[int]]):
+def infering_with_bt(work_board: list[list[int]]):
+    
+    finished_arrays = set()
+    q = Queue()
+    # finished = set()
+    for w in range(R):
+        # finished = finished | {w}
+        if w < no_rows:
+            row_idx = w
+            possibles = generate_possible(no_cols, x_arr[row_idx])
+            q.put((w, possibles))
+        else:
+            col_idx = w - no_rows
+            possibles = generate_possible(no_rows, y_arr[col_idx])
+            q.put((w, possibles))
+
+
     
     board_flag = False
 
-    cnt = 0
+    # cnt = 0
     while q.qsize() > 0:
         w, possibles = q.get(0)
         no_before = len(possibles)
@@ -176,15 +192,15 @@ def infering_with_bt(q: Queue, finished_arrays: set, work_board: list[list[int]]
             if possibles == set():
                 print("contradiction!")
                 return False
-            if len(possibles) < no_before or no_before == 1:
+            if len(possibles) < no_before:
                 board_flag = True
+                q.put((w, possibles))
+            elif  no_before == 1:
+                finished_arrays = finished_arrays | {w}
             work_board = update_work_board(w, no_rows, new_row, work_board)
 
-            row_array = [max(0, i) for i in work_board[row_idx]]
-            if rec_opt_dist(row_array, x_arr[row_idx]) != 0 :
-                q.put((w, possibles))
-            else:
-                finished_arrays = finished_arrays | {w}
+            # row_array = [max(0, i) for i in work_board[row_idx]]
+            # if rec_opt_dist(row_array, x_arr[row_idx]) != 0 :
 
         else:
             col_idx = w - no_rows
@@ -196,68 +212,69 @@ def infering_with_bt(q: Queue, finished_arrays: set, work_board: list[list[int]]
                 return False
             if len(possibles) < no_before:
                 board_flag = True
+                q.put((w, possibles))
+            elif no_before == 1:
+                finished_arrays = finished_arrays | {w}
             work_board = update_work_board(w, no_rows, new_col, work_board)
 
-            col_array = [max(0, i) for i in new_col]
-            if rec_opt_dist(col_array, y_arr[col_idx]) != 0 :
-                q.put((w, possibles))
-            else:
-                finished_arrays = finished_arrays | {w}
+            # col_array = [max(0, i) for i in new_col]
+            # if rec_opt_dist(col_array, y_arr[col_idx]) != 0 :
         # dump(work_board)
         # sleep(0.1)
-        cnt += 1
-        if cnt > R:
-            if board_flag == True:
-                board_flag = False
-                cnt = 0
-            else:
-                cnt = 0
 
-                dump(work_board)
-                # sleep(1)
-                # print("Made assumption")
+    # cnt += 1
+    # if cnt > R:
+    #     if board_flag == True:
+    #         board_flag = False
+    #         cnt = 0
+    #     else:
+    #         cnt = 0
 
-                changed = False
-                while changed == False:
-                    rand_pxl = int(randrange(no_cols * no_rows))
-                    rand_row = rand_pxl // no_rows
-                    rand_col = rand_pxl % no_cols
-                    if work_board[rand_row][rand_col] == 0 and \
-                        rand_row not in finished_arrays and \
-                        rand_col not in finished_arrays:
-                        changed = True
-                
-                rec_work_board = work_board
-                rec_work_board[rand_row][rand_col] = 1
-                print("Made assumption")
-                rec_q = q
-                recursive_result = infering_with_bt(rec_q, finished_arrays, rec_work_board) 
-                if recursive_result == False:
-                    print("Error!")
-                    rec_work_board[rand_row][rand_col] = -1
-                    recursive_result = infering_with_bt(rec_q, finished_arrays, rec_work_board) 
-                    # if recursive_result == False:
-                    return recursive_result
-                else:
-                    return True
+    dump(work_board)
+    # sleep(1)
+    # print("Made assumption")
 
-    return True
-
-q = Queue()
-finished = set()
-for w in range(R):
-    # finished = finished | {w}
-    if w < no_rows:
-        row_idx = w
-        possibles = generate_possible(no_cols, x_arr[row_idx])
-        q.put((w, possibles))
+    changed = False
+    while changed == False:
+        rand_pxl = int(randrange(no_cols * no_rows))
+        rand_row = rand_pxl // no_rows
+        rand_col = rand_pxl % no_cols
+        if work_board[rand_row][rand_col] == 0 and \
+            rand_row not in finished_arrays and \
+            rand_col not in finished_arrays:
+            changed = True
+    
+    rec_work_board = work_board
+    rec_work_board[rand_row][rand_col] = 1
+    print("Made assumption")
+    # rec_q = q
+    recursive_result = infering_with_bt(rec_work_board) 
+    if recursive_result == False:
+        print("Error!")
+        rec_work_board[rand_row][rand_col] = -1
+        recursive_result = infering_with_bt(rec_work_board) 
+        # if recursive_result == False:
+        return recursive_result
     else:
-        col_idx = w - no_rows
-        possibles = generate_possible(no_rows, y_arr[col_idx])
-        q.put((w, possibles))
+        return True
+
+    # return True
+
+# q = Queue()
+# finished = set()
+# for w in range(R):
+#     # finished = finished | {w}
+#     if w < no_rows:
+#         row_idx = w
+#         possibles = generate_possible(no_cols, x_arr[row_idx])
+#         q.put((w, possibles))
+#     else:
+#         col_idx = w - no_rows
+#         possibles = generate_possible(no_rows, y_arr[col_idx])
+#         q.put((w, possibles))
 
 
-result = infering_with_bt(q, finished, work_board)
+result = infering_with_bt(work_board)
 if result == True:
     write_solution_to_output(work_board)
 else:
