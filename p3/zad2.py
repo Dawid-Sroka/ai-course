@@ -162,9 +162,12 @@ def update_work_board(idx: int, max_row: int, new_array: tuple, board):
 
 def infering_with_bt(q: Queue, work_board: list[list[int]]):
     
+    board_flag = False
+
     cnt = 0
     while q.qsize() > 0:
         w, possibles = q.get(0)
+        no_before = len(possibles)
         # dump(work_board)
 
         if w < no_rows:
@@ -172,6 +175,8 @@ def infering_with_bt(q: Queue, work_board: list[list[int]]):
             new_row, possibles = iter_consider(tuple(work_board[row_idx]), possibles)
             if possibles == set():
                 return False
+            if len(possibles) < no_before:
+                board_flag = True
             work_board = update_work_board(w, no_rows, new_row, work_board)
 
             row_array = [max(0, i) for i in work_board[row_idx]]
@@ -186,6 +191,8 @@ def infering_with_bt(q: Queue, work_board: list[list[int]]):
             new_col, possibles = iter_consider(tuple(prev_col), possibles)
             if possibles == set():
                 return False
+            if len(possibles) < no_before:
+                board_flag = True
             work_board = update_work_board(w, no_rows, new_col, work_board)
 
             col_array = [max(0, i) for i in new_col]
@@ -195,31 +202,36 @@ def infering_with_bt(q: Queue, work_board: list[list[int]]):
         # dump(work_board)
         # sleep(0.1)
         cnt += 1
-        if cnt > 4*R:
-            dump(work_board)
-            sleep(1)
-            # print("Made assumption")
+        if cnt > R + 2:
+            if board_flag == True:
+                board_flag = False
+                cnt = 0
+            else:
 
-            cnt = 0
-            changed = False
-            while changed == False:
-                rand_pxl = int(randrange(no_cols * no_rows))
-                if work_board[rand_pxl // no_rows][rand_pxl % no_cols] == 0:
-                    changed = True
-            
-            rec_work_board = work_board
-            rec_work_board[rand_pxl // no_rows][rand_pxl % no_cols] = 1
-            print("Made assumption")
-            rec_q = q
-            recursive_result = infering_with_bt(rec_q, rec_work_board) 
-            if recursive_result == False:
-                print("Error!")
-                rec_work_board[rand_pxl // no_rows][rand_pxl % no_cols] = -1
+                dump(work_board)
+                sleep(1)
+                # print("Made assumption")
+
+                cnt = 0
+                changed = False
+                while changed == False:
+                    rand_pxl = int(randrange(no_cols * no_rows))
+                    if work_board[rand_pxl // no_rows][rand_pxl % no_cols] == 0:
+                        changed = True
+                
+                rec_work_board = work_board
+                rec_work_board[rand_pxl // no_rows][rand_pxl % no_cols] = 1
+                print("Made assumption")
+                rec_q = q
                 recursive_result = infering_with_bt(rec_q, rec_work_board) 
-                # if recursive_result == False:
-                return recursive_result
-            # else:
-            #     return True
+                if recursive_result == False:
+                    print("Error!")
+                    rec_work_board[rand_pxl // no_rows][rand_pxl % no_cols] = -1
+                    recursive_result = infering_with_bt(rec_q, rec_work_board) 
+                    # if recursive_result == False:
+                    return recursive_result
+                # else:
+                #     return True
 
     return True
 
