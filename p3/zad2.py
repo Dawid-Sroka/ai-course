@@ -130,20 +130,34 @@ def all_zeros(idx, possibles):
             return False
     return True
 
-
+from operator import add
 def iter_consider(array: list, possibles: set[tuple], array_len: int) -> tuple:
     """Iterate over possible values of array and delete impossible values.
     Then for every cell in row iterate over possible values and check whether
     0 or 1 can be set for sure. Return new_array with updated knowledge"""
+    sum_array = [0]* array_len
+    cnt = 0
     for p in possibles:
-        if consider(array, p, array_len) == False:
+        test = [array[i] + 2 *list(p)[i] for i in range(array_len)]
+        if 1 in test:
+            # print(test)
             possibles = possibles - {p}
+        # if consider(array, p, array_len) == False:
+        else:
+            cnt += 1
+            sum_array = list( map(add, sum_array, list(p)) )
+
     new_array = [0]* array_len
     for i in range(array_len):
-        if all_ones(i, possibles):
-            new_array[i] = 1
-        elif all_zeros(i, possibles):
+        if sum_array[i] == 0:
             new_array[i] = -1
+        elif sum_array[i] == cnt:
+            new_array[i] = 1
+        # elif all_ones(i, possibles):
+        #     new_array[i] = 1
+        # elif all_zeros(i, possibles):
+        #     new_array[i] = -1
+
     return tuple(new_array), possibles
 
 def update_work_board(idx: int, max_row: int, new_array: tuple, board):
@@ -243,13 +257,15 @@ def infering_with_bt(work_board: list[list[int]], domains: dict):
     # print("Made assumption")
 
     changed = False
+    rand_pxl = 0
     while changed == False:
         # print("looking for unfinished cell")
-        rand_pxl = int(randrange(no_cols * no_rows))
         rand_row = rand_pxl // no_cols
         rand_col = rand_pxl % no_cols
         if work_board[rand_row][rand_col] == 0:
             changed = True
+            break
+        rand_pxl += 1
     
     rec_work_board = deepcopy(work_board)
     # rec_domains = deepcopy(domains)
@@ -257,7 +273,7 @@ def infering_with_bt(work_board: list[list[int]], domains: dict):
     for k in domains.keys():
         rec_domains[k] = domains[k]
 
-    rec_work_board[rand_row][rand_col] = 1
+    rec_work_board[rand_row][rand_col] = -1
     # print("Made assumption " + str(rand_row) + ", " + str(rand_col))
     recursive_result, rec_work_board = infering_with_bt(rec_work_board, rec_domains) 
     if recursive_result == False:
@@ -271,7 +287,7 @@ def infering_with_bt(work_board: list[list[int]], domains: dict):
         for k in domains.keys():
             rec_domains[k] = domains[k]
 
-        rec_work_board[rand_row][rand_col] = -1
+        rec_work_board[rand_row][rand_col] = 1
         recursive_result, rec_work_board = infering_with_bt(rec_work_board, rec_domains) 
         # if recursive_result == False:
         return recursive_result, rec_work_board
