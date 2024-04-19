@@ -4,8 +4,9 @@
 from random import sample, randrange
 from functools import cache
 from queue import Queue
-from time import sleep
 from copy import deepcopy
+from operator import add
+
 
 input_file = open("zad_input.txt", 'r')
 output_file = open("zad_output.txt", 'w')
@@ -70,46 +71,6 @@ def iter_possible(dim: int, n:int, blocks: list[int], poss_set, prevs):
             new_prevs = prevs+new_block
             iter_possible(dim, new_n, new_blocks, poss_set, new_prevs)
 
-
-
-def rec_opt_dist(input_sequence: list[int], blocks: list[int]):
-    return rec_opt_dist_inner(tuple(input_sequence), tuple(blocks))
-
-# @cache
-def rec_opt_dist_inner(input_sequence: tuple[int], blocks: tuple[int]):
-    seq_len = len(input_sequence)
-    k = len(blocks)
-    if k == 0:
-        return sum(input_sequence)
-    right_bound = sum(blocks[1:]) + k-1
-
-    frame = blocks[0]
-    agg_seq = [0] * (seq_len + 1)
-    for i in range(1,seq_len + 1):
-        agg_seq[i] = agg_seq[i-1] + input_sequence[i-1]
-
-    max_in_frame = 0
-    opt_cost = seq_len
-
-    for i in range(frame, seq_len + 1 - right_bound):
-        in_frame = agg_seq[i] - agg_seq[i-frame]
-        rec_opt = rec_opt_dist(input_sequence[i+1:], blocks[1:])
-        if in_frame > max_in_frame:
-            max_in_frame = in_frame
-
-        if i+1 == seq_len + 1:
-            count_ones = agg_seq[i]
-        else:
-            count_ones = agg_seq[i+1]
-
-        bits_to_unset = count_ones - in_frame
-        bits_to_set = frame - in_frame
-        cost = bits_to_unset + bits_to_set + rec_opt
-        if cost < opt_cost:
-            opt_cost = cost
-
-    return opt_cost
-
 def consider(array: tuple, p: tuple, array_len: int):
     for i in range(array_len):
         if array[i] == 1 and p[i] == 0:
@@ -130,7 +91,6 @@ def all_zeros(idx, possibles):
             return False
     return True
 
-from operator import add
 def iter_consider(array: list, possibles: set[tuple], array_len: int) -> tuple:
     """Iterate over possible values of array and delete impossible values.
     Then for every cell in row iterate over possible values and check whether
@@ -138,11 +98,12 @@ def iter_consider(array: list, possibles: set[tuple], array_len: int) -> tuple:
     sum_array = [0]* array_len
     cnt = 0
     for p in possibles:
-        test = [array[i] + 2 *list(p)[i] for i in range(array_len)]
+        # test = [array[i] + 2 *list(p)[i] for i in range(array_len)]
+        test = [0] * array_len
+        for i in range(array_len):
+            test[i] = array[i] + 2*p[i]
         if 1 in test:
-            # print(test)
             possibles = possibles - {p}
-        # if consider(array, p, array_len) == False:
         else:
             cnt += 1
             sum_array = list( map(add, sum_array, list(p)) )
@@ -153,12 +114,9 @@ def iter_consider(array: list, possibles: set[tuple], array_len: int) -> tuple:
             new_array[i] = -1
         elif sum_array[i] == cnt:
             new_array[i] = 1
-        # elif all_ones(i, possibles):
-        #     new_array[i] = 1
-        # elif all_zeros(i, possibles):
-        #     new_array[i] = -1
 
     return tuple(new_array), possibles
+
 
 def update_work_board(idx: int, max_row: int, new_array: tuple, board):
     if idx < max_row:
@@ -176,20 +134,14 @@ def infering_with_bt(work_board: list[list[int]], domains: dict):
     for w in range(R):
         if w < no_rows:
             row_idx = w
-            # possibles = generate_possible(no_cols, x_arr[row_idx])
             q.put((w, domains[w]))
         else:
             col_idx = w - no_rows
-            # possibles = generate_possible(no_rows, y_arr[col_idx])
             q.put((w, domains[w]))
 
-    # board_flag = False
-    # cnt = 0
     while q.qsize() > 0:
-        # print("get from queue")
         w, possibles = q.get(0)
         no_before = len(possibles)
-        # dump(work_board)
 
         if w < no_rows:
             row_idx = w
@@ -198,22 +150,11 @@ def infering_with_bt(work_board: list[list[int]], domains: dict):
             work_board = update_work_board(w, no_rows, new_row, work_board)
             domains[w] = new_possibles
             if new_possibles == set():
-                # print("contradiction!")``
                 return False, work_board
 
             for i in range(no_cols):
                 if prev_row[i] != new_row[i]:
                     q.put((no_rows + i, domains[no_rows + i]))
-
-            # no_current = len(new_possibles)
-
-            row_array = [max(0, i) for i in work_board[row_idx]]
-            # if rec_opt_dist(row_array, x_arr[row_idx]) != 0 :
-            # if sum(row_array) < sum(x_arr[row_idx]) :
-            #     q.put((w, possibles))
-            # if no_current < no_before:
-            #     # q.put((w, possibles))
-            #     board_flag = True
 
         else:
             col_idx = w - no_rows
@@ -230,18 +171,6 @@ def infering_with_bt(work_board: list[list[int]], domains: dict):
                 if prev_col[i] != new_col[i]:
                     q.put((i, domains[i]))
 
-            # no_current = len(new_possibles)
-
-            col_array = [max(0, i) for i in new_col]
-            # if rec_opt_dist(col_array, y_arr[col_idx]) != 0 :
-            # if sum(col_array) < sum(y_arr[col_idx]) :
-                # q.put((w, possibles))
-
-            # if no_current < no_before:
-            # #     q.put((w, possibles))
-            #     board_flag = True
-
-
         # write_solution_to_output(work_board)
 
     flag_return = True
@@ -252,8 +181,6 @@ def infering_with_bt(work_board: list[list[int]], domains: dict):
     if flag_return == True:
         return True, work_board
 
-    # dump(work_board)
-    # sleep(1)
     # print("Made assumption")
 
     changed = False
@@ -268,7 +195,6 @@ def infering_with_bt(work_board: list[list[int]], domains: dict):
         rand_pxl += 1
     
     rec_work_board = deepcopy(work_board)
-    # rec_domains = deepcopy(domains)
     rec_domains = {}
     for k in domains.keys():
         rec_domains[k] = domains[k]
@@ -278,9 +204,6 @@ def infering_with_bt(work_board: list[list[int]], domains: dict):
     recursive_result, rec_work_board = infering_with_bt(rec_work_board, rec_domains) 
     if recursive_result == False:
         # print("Error!")
-        # rec_work_board2 = deepcopy(work_board)
-        # rec_domains2 = deepcopy(domains)
-
         for i in range(no_rows):
             for j in range(no_cols):
                 rec_work_board[i][j] = work_board[i][j]
@@ -289,12 +212,9 @@ def infering_with_bt(work_board: list[list[int]], domains: dict):
 
         rec_work_board[rand_row][rand_col] = 1
         recursive_result, rec_work_board = infering_with_bt(rec_work_board, rec_domains) 
-        # if recursive_result == False:
         return recursive_result, rec_work_board
     else:
         return True, rec_work_board
-
-    # return True
 
 # work_board[1][1] = 1
 # work_board[19][1] = 1
