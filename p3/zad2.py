@@ -95,24 +95,23 @@ def iter_consider(array: list, possibles: set[tuple], array_len: int) -> tuple:
     """Iterate over possible values of array and delete impossible values.
     Then for every cell in row iterate over possible values and check whether
     0 or 1 can be set for sure. Return new_array with updated knowledge"""
-    sum_array = [0]* array_len
-    cnt = 0
-    for p in possibles:
-        # test = [array[i] + 2 *list(p)[i] for i in range(array_len)]
-        test = [0] * array_len
-        for i in range(array_len):
-            test[i] = array[i] + 2*p[i]
-        if 1 in test:
-            possibles = possibles - {p}
-        else:
-            cnt += 1
-            sum_array = list( map(add, sum_array, list(p)) )
 
     new_array = [0]* array_len
     for i in range(array_len):
-        if sum_array[i] == 0:
+        cnt = 0
+        sum = 0
+        base = array[i]
+        for p in possibles:
+            test = base + 2*p[i]
+            if test == 1:
+                possibles = possibles - {p}
+            else:
+                cnt += 1
+                sum += p[i] 
+
+        if sum == 0:
             new_array[i] = -1
-        elif sum_array[i] == cnt:
+        elif sum == cnt:
             new_array[i] = 1
 
     return tuple(new_array), possibles
