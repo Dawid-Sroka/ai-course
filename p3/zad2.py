@@ -136,15 +136,15 @@ def all_zeros(idx, possibles):
     return True
 
 
-def iter_consider(array: tuple, possibles: set[tuple]) -> tuple:
+def iter_consider(array: tuple, possibles: set[tuple], array_len: int) -> tuple:
     """Iterate over possible values of array and delete impossible values.
     Then for every cell in row iterate over possible values and check whether
     0 or 1 can be set for sure. Return new_array with updated knowledge"""
     for p in possibles:
         if consider(array, p) == False:
             possibles = possibles - {p}
-    new_array = [0]* len(array)
-    for i in range(len(array)):
+    new_array = [0]* array_len
+    for i in range(array_len):
         if all_ones(i, possibles):
             new_array[i] = 1
         if all_zeros(i, possibles):
@@ -185,7 +185,7 @@ def infering_with_bt(work_board: list[list[int]]):
 
         if w < no_rows:
             row_idx = w
-            new_row, possibles = iter_consider(tuple(work_board[row_idx]), possibles)
+            new_row, possibles = iter_consider(tuple(work_board[row_idx]), possibles, no_cols)
             work_board = update_work_board(w, no_rows, new_row, work_board)
             if possibles == set():
                 # print("contradiction!")``
@@ -193,7 +193,8 @@ def infering_with_bt(work_board: list[list[int]]):
             no_current = len(possibles)
 
             row_array = [max(0, i) for i in work_board[row_idx]]
-            if rec_opt_dist(row_array, x_arr[row_idx]) != 0 :
+            # if rec_opt_dist(row_array, x_arr[row_idx]) != 0 :
+            if sum(row_array) < sum(x_arr[row_idx]) :
                 q.put((w, possibles))
             if no_current < no_before:
                 # q.put((w, possibles))
@@ -204,14 +205,15 @@ def infering_with_bt(work_board: list[list[int]]):
             prev_col = [0]*no_rows
             for i in range(no_rows):
                 prev_col[i] = work_board[i][col_idx]
-            new_col, possibles = iter_consider(tuple(prev_col), possibles)
+            new_col, possibles = iter_consider(tuple(prev_col), possibles, no_rows)
             work_board = update_work_board(w, no_rows, new_col, work_board)
             if possibles == set():
                 return False, work_board
             no_current = len(possibles)
 
             col_array = [max(0, i) for i in new_col]
-            if rec_opt_dist(col_array, y_arr[col_idx]) != 0 :
+            # if rec_opt_dist(col_array, y_arr[col_idx]) != 0 :
+            if sum(col_array) < sum(y_arr[col_idx]) :
                 q.put((w, possibles))
 
             if no_current < no_before:
@@ -267,7 +269,9 @@ def infering_with_bt(work_board: list[list[int]]):
 
     # return True
 
+# work_board[1][1] = 1
 # work_board[8][8] = 1
+# work_board[8][9] = 1
 
 result, work_board = infering_with_bt(work_board)
 if result == False:
