@@ -1,8 +1,17 @@
-# Dawid Sroka, zad1 z pracowni 3
+# Dawid Sroka, zad2 z pracowni 3
 #
+# I changed the infering implementation from P3/z1.
+# Now I have a function infering_with_bt. It has two stages,
+# first I do a real ac3, then I backtrack by recursive call.
+# When I consider a row/column and update my knowlege about a pixel
+# I put on the queue all rows/cols crossing that pixel. I stop infering when
+# the queue is empty.
+# Then I pick a pixel to guess (I do it in order from top to bottom).
+# I assume it is blank and invoke recursively. If False is returned,
+# I assume the pixel is colored and again invoke recursively.
+
 
 from random import sample, randrange
-from functools import cache
 from queue import Queue
 from copy import deepcopy
 from operator import add
@@ -71,30 +80,9 @@ def iter_possible(dim: int, n:int, blocks: list[int], poss_set, prevs):
             new_prevs = prevs+new_block
             iter_possible(dim, new_n, new_blocks, poss_set, new_prevs)
 
-def consider(array: tuple, p: tuple, array_len: int):
-    for i in range(array_len):
-        if array[i] == 1 and p[i] == 0:
-            return False
-        elif array[i] == -1 and p[i] == 1:
-            return False
-    return True
-
-def all_ones(idx, possibles):
-    for p in possibles:
-        if p[idx] == 0:
-            return False
-    return True
-
-def all_zeros(idx, possibles):
-    for p in possibles:
-        if p[idx] == 1:
-            return False
-    return True
-
 def iter_consider(array: list, possibles: set[tuple], array_len: int) -> tuple:
     """Iterate over possible values of array and delete impossible values.
-    Then for every cell in row iterate over possible values and check whether
-    0 or 1 can be set for sure. Return new_array with updated knowledge"""
+    Return new_array with updated knowledge"""
 
     new_array = [0]* array_len
     for i in range(array_len):
@@ -215,10 +203,6 @@ def infering_with_bt(work_board: list[list[int]], domains: dict):
     else:
         return True, rec_work_board
 
-# work_board[1][1] = 1
-# work_board[19][1] = 1
-# work_board[8][8] = 1
-# work_board[8][9] = 1
 
 domains = {}
 for w in range(R):
